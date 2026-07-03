@@ -3,6 +3,9 @@ services:
     image: eclipse-mosquitto:2
     ports:
       - "0.0.0.0:1883:1883"  # bind all host interfaces — the real ESP32-CAM connects over LAN
-    command: >
-      sh -c "printf 'listener 1883\nallow_anonymous true\n' > /m.conf
-      && mosquitto -c /m.conf"
+    # List-form command: compose's string-form parsing eats the `\n` backslashes,
+    # producing a garbage config line and a dead broker.
+    command:
+      - sh
+      - -c
+      - printf 'listener 1883\nallow_anonymous true\n' > /m.conf && mosquitto -c /m.conf
