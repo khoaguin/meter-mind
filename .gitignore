@@ -1,0 +1,22 @@
+.planning/
+refs/
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+*.egg-info/
+
+# Tooling caches
+.ruff_cache/
+.pytest_cache/
+.pyrefly_cache/
+
+# Env / secrets
+.env
+.env.*
+!.env.example
+
+# OS
+.DS_Store

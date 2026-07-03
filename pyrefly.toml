@@ -1,0 +1,16 @@
+project-includes = ["**/*.py"]
+project-excludes = [
+    "**/.venv/**",
+    "**/.trees/**",
+    "**/node_modules/**",
+    "**/__pycache__/**",
+]
+python-version = "3.12"
+
+preset = "default"
+
+# Baseline of pre-existing type errors. Empty today. It exists so a future PR
+# that enables a stricter rule can lock the resulting findings as known via
+# `pyrefly check --update-baseline`, then chip them down in follow-ups instead
+# of having to fix every site in one go.
+baseline = ".pyrefly-baseline.json"
