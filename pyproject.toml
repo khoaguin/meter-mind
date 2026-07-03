@@ -13,6 +13,16 @@ dependencies = [
     "pyyaml>=6.0.3",
 ]
 
+[project.scripts]
+edgesim = "edgesim.cli:main"
+
+[build-system]
+requires = ["uv_build>=0.7.19,<1"]
+build-backend = "uv_build"
+
+[tool.uv.build-backend]
+module-name = "edgesim"
+
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 pythonpath = ["src"]
