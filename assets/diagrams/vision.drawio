@@ -1,0 +1,120 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mxfile host="drawio" version="30.2.6">
+  <diagram name="System-Vision">
+    <mxGraphModel background="#0a0f1c" dx="900" dy="900" grid="0" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1050" pageHeight="1200" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+
+        <!-- Title -->
+        <mxCell id="ttl" value="MeterMind — from one $10 chip to an agentic meter-ops platform" style="text;html=1;align=center;verticalAlign=middle;fontStyle=1;fontSize=20;fontColor=#e6eefb;fontFamily=Courier New;" vertex="1" parent="1">
+          <mxGeometry x="40" y="10" width="960" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="sub" value="data flows UP: physical meters → edge readers → broker → hub → billing core → AI copilot → the owner" style="text;html=1;align=center;verticalAlign=middle;fontSize=13;fontColor=#9fb0c3;fontFamily=Courier New;" vertex="1" parent="1">
+          <mxGeometry x="40" y="42" width="960" height="24" as="geometry" />
+        </mxCell>
+
+        <!-- L5 Owner UI -->
+        <mxCell id="ui" value="&lt;b&gt;🖥️  Owner UI&lt;/b&gt; &amp;nbsp; — &amp;nbsp; chat (VN / EN)  +  fleet dashboard&lt;br&gt;&lt;span style=&quot;font-size:11px&quot;&gt;ask in plain language (&amp;quot;who hasn&#39;t paid?&amp;quot;, &amp;quot;why is kiosk 3 high?&amp;quot;) · devices · latest reads · paid / unpaid&lt;/span&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#33240a;strokeColor=#e8b339;dashed=1;fontColor=#dbe4f0;fontSize=13;verticalAlign=middle;fontFamily=Courier New;" vertex="1" parent="1">
+          <mxGeometry x="80" y="90" width="880" height="70" as="geometry" />
+        </mxCell>
+
+        <!-- L4 Agent -->
+        <mxCell id="agent" value="&lt;b&gt;🤖  Agentic Copilot&lt;/b&gt; &amp;nbsp; — &amp;nbsp; Claude + tools&lt;br&gt;&lt;span style=&quot;font-size:11px&quot;&gt;query_readings · compute_invoice · list_unpaid · draft_reminder · mark_paid · get_low_confidence · request_recapture&lt;/span&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#33240a;strokeColor=#e8b339;dashed=1;fontColor=#dbe4f0;fontSize=13;verticalAlign=middle;fontFamily=Courier New;" vertex="1" parent="1">
+          <mxGeometry x="80" y="220" width="880" height="70" as="geometry" />
+        </mxCell>
+
+        <!-- L3 Core -->
+        <mxCell id="core" value="&lt;b&gt;⚙️  Deterministic Core&lt;/b&gt; &amp;nbsp; — &amp;nbsp; code, not a model&lt;br&gt;&lt;span style=&quot;font-size:11px&quot;&gt;tariff math · invoicing · payment status · threshold anomaly flags&lt;/span&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#33240a;strokeColor=#e8b339;dashed=1;fontColor=#dbe4f0;fontSize=13;verticalAlign=middle;fontFamily=Courier New;" vertex="1" parent="1">
+          <mxGeometry x="80" y="350" width="880" height="66" as="geometry" />
+        </mxCell>
+
+        <!-- L2 Hub -->
+        <mxCell id="hub" value="&lt;b&gt;🛰️  Hub&lt;/b&gt; &amp;nbsp; — &amp;nbsp; MQTT ingest + database&lt;br&gt;&lt;span style=&quot;font-size:11px&quot;&gt;stores readings · tenants · tariffs · payments&lt;/span&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#33240a;strokeColor=#e8b339;dashed=1;fontColor=#dbe4f0;fontSize=13;verticalAlign=middle;fontFamily=Courier New;" vertex="1" parent="1">
+          <mxGeometry x="80" y="476" width="880" height="66" as="geometry" />
+        </mxCell>
+
+        <!-- Broker -->
+        <mxCell id="broker" value="&lt;b&gt;📨  MQTT Broker&lt;/b&gt; &amp;nbsp; — &amp;nbsp; mosquitto (docker-compose) &amp;nbsp; · &amp;nbsp; the shared message bus" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#2e250f;strokeColor=#d7b357;fontColor=#dbe4f0;fontSize=13;verticalAlign=middle;fontFamily=Courier New;" vertex="1" parent="1">
+          <mxGeometry x="80" y="602" width="880" height="56" as="geometry" />
+        </mxCell>
+
+        <!-- L1 Producers: built sim + planned real -->
+        <mxCell id="prodsim" value="&lt;b&gt;📟  edgesim — virtual fleet&lt;/b&gt; &amp;nbsp; ✅ THIS REPO&lt;br&gt;&lt;span style=&quot;font-size:11px&quot;&gt;N VirtualDevices · runs jomjol&#39;s &lt;b&gt;real&lt;/b&gt; TFLite CNN&lt;br&gt;on &lt;b&gt;real&lt;/b&gt; labeled digit crops — no hardware needed&lt;/span&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#0a2b1e;strokeColor=#34d399;fontColor=#dbe4f0;fontSize=13;verticalAlign=middle;fontFamily=Courier New;" vertex="1" parent="1">
+          <mxGeometry x="80" y="718" width="420" height="120" as="geometry" />
+        </mxCell>
+        <mxCell id="prodreal" value="&lt;b&gt;📷  Real ESP32-CAM fleet&lt;/b&gt;&lt;br&gt;&lt;span style=&quot;font-size:11px&quot;&gt;jomjol firmware · on-device TFLite&lt;br&gt;&lt;i&gt;drops in later — publishes the identical contract&lt;/i&gt;&lt;/span&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#33240a;strokeColor=#e8b339;dashed=1;fontColor=#dbe4f0;fontSize=13;verticalAlign=middle;fontFamily=Courier New;" vertex="1" parent="1">
+          <mxGeometry x="540" y="718" width="420" height="120" as="geometry" />
+        </mxCell>
+
+        <!-- L0 Physical meters -->
+        <mxCell id="meters" value="&lt;b&gt;💧 ⚡ 🌀  Physical Meters&lt;/b&gt; &amp;nbsp; — &amp;nbsp; one per tenant / location&lt;br&gt;&lt;span style=&quot;font-size:11px&quot;&gt;water (digit roller) · electricity (kWh LCD) · analog dial&lt;/span&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#0c2530;strokeColor=#2dd4bf;fontColor=#dbe4f0;fontSize=13;verticalAlign=middle;fontFamily=Courier New;" vertex="1" parent="1">
+          <mxGeometry x="80" y="898" width="880" height="70" as="geometry" />
+        </mxCell>
+
+        <!-- Vertical flow edges (UP) -->
+        <mxCell id="e_mp" value="read: snap → digits (on-chip)" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;fontSize=10;labelBackgroundColor=#0a0f1c;exitX=0.76;exitY=0;exitDx=0;exitDy=0;entryX=0.5;entryY=1;entryDx=0;entryDy=0;endArrow=classic;fontFamily=Courier New;fontColor=#dbe4f0;strokeColor=#9fb0c3;" edge="1" parent="1" source="meters" target="prodreal">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e_sb" value="MQTT · jomjol topics" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;fontSize=10;labelBackgroundColor=#0a0f1c;exitX=0.5;exitY=0;exitDx=0;exitDy=0;entryX=0.24;entryY=1;entryDx=0;entryDy=0;endArrow=classic;fontFamily=Courier New;fontColor=#dbe4f0;strokeColor=#9fb0c3;" edge="1" parent="1" source="prodsim" target="broker">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e_rb" value="MQTT · jomjol topics" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;fontSize=10;labelBackgroundColor=#0a0f1c;exitX=0.5;exitY=0;exitDx=0;exitDy=0;entryX=0.76;entryY=1;entryDx=0;entryDy=0;endArrow=classic;fontFamily=Courier New;fontColor=#dbe4f0;strokeColor=#9fb0c3;" edge="1" parent="1" source="prodreal" target="broker">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e_bh" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=0;exitDx=0;exitDy=0;entryX=0.5;entryY=1;entryDx=0;entryDy=0;endArrow=classic;fontFamily=Courier New;fontColor=#dbe4f0;strokeColor=#9fb0c3;" edge="1" parent="1" source="broker" target="hub">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e_hc" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=0;exitDx=0;exitDy=0;entryX=0.5;entryY=1;entryDx=0;entryDy=0;endArrow=classic;fontFamily=Courier New;fontColor=#dbe4f0;strokeColor=#9fb0c3;" edge="1" parent="1" source="hub" target="core">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e_ca" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=0;exitDx=0;exitDy=0;entryX=0.5;entryY=1;entryDx=0;entryDy=0;endArrow=classic;fontFamily=Courier New;fontColor=#dbe4f0;strokeColor=#9fb0c3;" edge="1" parent="1" source="core" target="agent">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e_au" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=0;exitDx=0;exitDy=0;entryX=0.5;entryY=1;entryDx=0;entryDy=0;endArrow=classic;fontFamily=Courier New;fontColor=#dbe4f0;strokeColor=#9fb0c3;" edge="1" parent="1" source="agent" target="ui">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- Feedback loop: recapture (down the left corridor) -->
+        <mxCell id="e_fb" value="low-confidence → request_recapture" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;dashed=1;fontSize=10;fontColor=#e06c75;strokeColor=#e06c75;labelBackgroundColor=#0a0f1c;exitX=0;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;endArrow=classic;fontFamily=Courier New;" edge="1" parent="1" source="agent" target="prodsim">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="40" y="255" />
+              <mxPoint x="40" y="778" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+
+        <!-- Legend -->
+        <mxCell id="leg" value="Legend" style="rounded=0;whiteSpace=wrap;html=1;fillColor=none;strokeColor=#8b98ab;verticalAlign=top;fontStyle=1;fontSize=12;align=left;fontFamily=Courier New;fontColor=#dbe4f0;" vertex="1" parent="1">
+          <mxGeometry x="80" y="1000" width="880" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="lg1" value="" style="rounded=0;html=1;fillColor=#0a2b1e;strokeColor=#34d399;fontFamily=Courier New;fontColor=#dbe4f0;" vertex="1" parent="leg">
+          <mxGeometry x="16" y="30" width="26" height="16" as="geometry" />
+        </mxCell>
+        <mxCell id="lg1t" value="Built (this repo)" style="text;html=1;align=left;verticalAlign=middle;fontSize=11;fontFamily=Courier New;fontColor=#dbe4f0;" vertex="1" parent="leg">
+          <mxGeometry x="48" y="28" width="150" height="20" as="geometry" />
+        </mxCell>
+        <mxCell id="lg2" value="" style="rounded=0;html=1;fillColor=#2e250f;strokeColor=#d7b357;fontFamily=Courier New;fontColor=#dbe4f0;" vertex="1" parent="leg">
+          <mxGeometry x="230" y="30" width="26" height="16" as="geometry" />
+        </mxCell>
+        <mxCell id="lg2t" value="Provided (broker)" style="text;html=1;align=left;verticalAlign=middle;fontSize=11;fontFamily=Courier New;fontColor=#dbe4f0;" vertex="1" parent="leg">
+          <mxGeometry x="262" y="28" width="150" height="20" as="geometry" />
+        </mxCell>
+        <mxCell id="lg3" value="" style="rounded=0;html=1;fillColor=#33240a;strokeColor=#e8b339;dashed=1;fontFamily=Courier New;fontColor=#dbe4f0;" vertex="1" parent="leg">
+          <mxGeometry x="440" y="30" width="26" height="16" as="geometry" />
+        </mxCell>
+        <mxCell id="lg3t" value="Planned (next milestones)" style="text;html=1;align=left;verticalAlign=middle;fontSize=11;fontFamily=Courier New;fontColor=#dbe4f0;" vertex="1" parent="leg">
+          <mxGeometry x="472" y="28" width="200" height="20" as="geometry" />
+        </mxCell>
+        <mxCell id="lg4" value="" style="rounded=0;html=1;fillColor=#0c2530;strokeColor=#2dd4bf;fontFamily=Courier New;fontColor=#dbe4f0;" vertex="1" parent="leg">
+          <mxGeometry x="690" y="30" width="26" height="16" as="geometry" />
+        </mxCell>
+        <mxCell id="lg4t" value="Physical world" style="text;html=1;align=left;verticalAlign=middle;fontSize=11;fontFamily=Courier New;fontColor=#dbe4f0;" vertex="1" parent="leg">
+          <mxGeometry x="722" y="28" width="150" height="20" as="geometry" />
+        </mxCell>
+
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

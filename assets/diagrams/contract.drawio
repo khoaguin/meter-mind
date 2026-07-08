@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mxfile host="drawio" version="30.2.6">
+  <diagram name="MQTT-Contract-Seam">
+    <mxGraphModel background="#0a0f1c" dx="900" dy="900" grid="0" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1260" pageHeight="660" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+
+        <mxCell id="ttl" value="The contract is the seam - sim and real chip publish byte-identical topics" style="text;html=1;align=center;verticalAlign=middle;fontStyle=1;fontSize=18;fontColor=#e6eefb;fontFamily=Courier New;" vertex="1" parent="1">
+          <mxGeometry x="40" y="14" width="1180" height="28" as="geometry" />
+        </mxCell>
+        <mxCell id="sub" value="a downstream hub cannot tell which producer sent a reading - that is the whole point" style="text;html=1;align=center;verticalAlign=middle;fontSize=12;fontColor=#9fb0c3;fontFamily=Courier New;" vertex="1" parent="1">
+          <mxGeometry x="40" y="44" width="1180" height="22" as="geometry" />
+        </mxCell>
+
+        <!-- Producers -->
+        <mxCell id="psim" value="&lt;b&gt;edgesim&lt;/b&gt;&lt;br&gt;virtual fleet [built]" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#0a2b1e;strokeColor=#34d399;fontColor=#dbe4f0;fontSize=12;fontFamily=Courier New;" vertex="1" parent="1">
+          <mxGeometry x="60" y="150" width="180" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="preal" value="&lt;b&gt;Real ESP32-CAM&lt;/b&gt;&lt;br&gt;drop-in later" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#33240a;strokeColor=#e8b339;dashed=1;fontColor=#dbe4f0;fontSize=12;fontFamily=Courier New;" vertex="1" parent="1">
+          <mxGeometry x="60" y="340" width="180" height="80" as="geometry" />
+        </mxCell>
+
+        <!-- MainTopic node -->
+        <mxCell id="main" value="&lt;b&gt;MainTopic&lt;/b&gt;&lt;br&gt;e.g. kiosk1-water" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#221a33;strokeColor=#a78bfa;fontColor=#dbe4f0;fontSize=13;fontFamily=Courier New;" vertex="1" parent="1">
+          <mxGeometry x="330" y="240" width="180" height="90" as="geometry" />
+        </mxCell>
+
+        <!-- Flat fields: header + 5 word chips -->
+        <mxCell id="fhdr" value="&lt;b&gt;Flat fields - native (5)&lt;/b&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#0c2530;strokeColor=#2dd4bf;fontColor=#dbe4f0;fontSize=13;fontFamily=Courier New;" vertex="1" parent="1">
+          <mxGeometry x="620" y="86" width="600" height="36" as="geometry" />
+        </mxCell>
+        <mxCell id="ch1" value="value" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#0c2530;strokeColor=#2dd4bf;fontColor=#dbe4f0;fontSize=12;fontFamily=Courier New;" vertex="1" parent="1"><mxGeometry x="620" y="130" width="108" height="34" as="geometry" /></mxCell>
+        <mxCell id="ch2" value="raw" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#0c2530;strokeColor=#2dd4bf;fontColor=#dbe4f0;fontSize=12;fontFamily=Courier New;" vertex="1" parent="1"><mxGeometry x="740" y="130" width="108" height="34" as="geometry" /></mxCell>
+        <mxCell id="ch3" value="error" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#0c2530;strokeColor=#2dd4bf;fontColor=#dbe4f0;fontSize=12;fontFamily=Courier New;" vertex="1" parent="1"><mxGeometry x="860" y="130" width="108" height="34" as="geometry" /></mxCell>
+        <mxCell id="ch4" value="rate" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#0c2530;strokeColor=#2dd4bf;fontColor=#dbe4f0;fontSize=12;fontFamily=Courier New;" vertex="1" parent="1"><mxGeometry x="980" y="130" width="108" height="34" as="geometry" /></mxCell>
+        <mxCell id="ch5" value="timestamp" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#0c2530;strokeColor=#2dd4bf;fontColor=#dbe4f0;fontSize=12;fontFamily=Courier New;" vertex="1" parent="1"><mxGeometry x="1100" y="130" width="120" height="34" as="geometry" /></mxCell>
+
+        <mxCell id="json" value="&lt;b&gt;/json - native (all 6)&lt;/b&gt;&lt;br&gt;the single source of truth : values are strings" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#221a33;strokeColor=#a78bfa;fontColor=#dbe4f0;fontSize=13;fontFamily=Courier New;" vertex="1" parent="1">
+          <mxGeometry x="620" y="190" width="600" height="66" as="geometry" />
+        </mxCell>
+
+        <mxCell id="add" value="&lt;b&gt;confidence + MeterType&lt;/b&gt;&lt;br&gt;additive (ours) : a real chip omits both" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#0a2b1e;strokeColor=#34d399;fontColor=#dbe4f0;fontSize=13;fontFamily=Courier New;" vertex="1" parent="1">
+          <mxGeometry x="620" y="280" width="600" height="66" as="geometry" />
+        </mxCell>
+
+        <mxCell id="status" value="&lt;b&gt;Device status - native (5)&lt;/b&gt;&lt;br&gt;Hostname : IP : MAC : Uptime : wifiRSSI" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#1a2233;strokeColor=#9fb0c3;fontColor=#dbe4f0;fontSize=13;fontFamily=Courier New;" vertex="1" parent="1">
+          <mxGeometry x="620" y="370" width="600" height="66" as="geometry" />
+        </mxCell>
+
+        <!-- producer -> main -->
+        <mxCell id="e_sm" value="MQTT" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;fontSize=10;labelBackgroundColor=#0a0f1c;exitX=1;exitY=0.5;entryX=0;entryY=0.3;endArrow=classic;strokeWidth=2;strokeColor=#34d399;fontFamily=Courier New;fontColor=#dbe4f0;" edge="1" parent="1" source="psim" target="main"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e_rm" value="MQTT" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;fontSize=10;labelBackgroundColor=#0a0f1c;exitX=1;exitY=0.5;entryX=0;entryY=0.7;endArrow=classic;strokeWidth=2;strokeColor=#e8b339;dashed=1;fontFamily=Courier New;fontColor=#dbe4f0;" edge="1" parent="1" source="preal" target="main"><mxGeometry relative="1" as="geometry" /></mxCell>
+
+        <!-- main -> groups -->
+        <mxCell id="e_mf" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;exitX=1;exitY=0.15;entryX=0;entryY=0.5;endArrow=classic;fontFamily=Courier New;fontColor=#dbe4f0;strokeColor=#9fb0c3;" edge="1" parent="1" source="main" target="fhdr"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e_mj" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;exitX=1;exitY=0.4;entryX=0;entryY=0.5;endArrow=classic;fontFamily=Courier New;fontColor=#dbe4f0;strokeColor=#9fb0c3;" edge="1" parent="1" source="main" target="json"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e_ma" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;exitX=1;exitY=0.6;entryX=0;entryY=0.5;endArrow=classic;fontFamily=Courier New;fontColor=#dbe4f0;strokeColor=#9fb0c3;" edge="1" parent="1" source="main" target="add"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e_ms" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;exitX=1;exitY=0.8;entryX=0;entryY=0.5;endArrow=classic;fontFamily=Courier New;fontColor=#dbe4f0;strokeColor=#9fb0c3;" edge="1" parent="1" source="main" target="status"><mxGeometry relative="1" as="geometry" /></mxCell>
+
+        <!-- Legend -->
+        <mxCell id="leg" value="Legend" style="rounded=0;whiteSpace=wrap;html=1;fillColor=none;strokeColor=#8b98ab;verticalAlign=top;fontStyle=1;fontSize=12;align=left;spacingLeft=8;spacingTop=6;fontFamily=Courier New;fontColor=#dbe4f0;" vertex="1" parent="1">
+          <mxGeometry x="60" y="470" width="500" height="150" as="geometry" />
+        </mxCell>
+        <mxCell id="lg1" value="" style="rounded=0;html=1;fillColor=#0c2530;strokeColor=#2dd4bf;fontFamily=Courier New;fontColor=#dbe4f0;" vertex="1" parent="leg"><mxGeometry x="16" y="38" width="26" height="16" as="geometry" /></mxCell>
+        <mxCell id="lg1t" value="Native jomjol - byte-exact; a real chip emits these too" style="text;html=1;align=left;verticalAlign=middle;fontSize=11;fontFamily=Courier New;fontColor=#dbe4f0;" vertex="1" parent="leg"><mxGeometry x="52" y="36" width="440" height="20" as="geometry" /></mxCell>
+        <mxCell id="lg2" value="" style="rounded=0;html=1;fillColor=#221a33;strokeColor=#a78bfa;fontFamily=Courier New;fontColor=#dbe4f0;" vertex="1" parent="leg"><mxGeometry x="16" y="72" width="26" height="16" as="geometry" /></mxCell>
+        <mxCell id="lg2t" value="The /json payload - the single source of truth (all 6)" style="text;html=1;align=left;verticalAlign=middle;fontSize=11;fontFamily=Courier New;fontColor=#dbe4f0;" vertex="1" parent="leg"><mxGeometry x="52" y="70" width="460" height="20" as="geometry" /></mxCell>
+        <mxCell id="lg3" value="" style="rounded=0;html=1;fillColor=#0a2b1e;strokeColor=#34d399;fontFamily=Courier New;fontColor=#dbe4f0;" vertex="1" parent="leg"><mxGeometry x="16" y="106" width="26" height="16" as="geometry" /></mxCell>
+        <mxCell id="lg3t" value="Additive (ours) - powers billing + the low-confidence loop" style="text;html=1;align=left;verticalAlign=middle;fontSize=11;fontFamily=Courier New;fontColor=#dbe4f0;" vertex="1" parent="leg"><mxGeometry x="52" y="104" width="460" height="20" as="geometry" /></mxCell>
+
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

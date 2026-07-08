@@ -1,0 +1,117 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mxfile host="drawio" version="30.2.6">
+  <diagram name="Physical-to-Code">
+    <mxGraphModel background="#0a0f1c" dx="900" dy="900" grid="0" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1050" pageHeight="1000" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+
+        <mxCell id="ttl" value="Rosetta stone — a real ESP32-CAM meter-reader, mapped to the edgesim classes that stand in for it" style="text;html=1;align=center;verticalAlign=middle;fontStyle=1;fontSize=17;fontColor=#e6eefb;fontFamily=Courier New;" vertex="1" parent="1">
+          <mxGeometry x="60" y="16" width="930" height="28" as="geometry" />
+        </mxCell>
+
+        <!-- column headers -->
+        <mxCell id="hL" value="PHYSICAL — what a flashed chip does on a meter" style="text;html=1;align=center;verticalAlign=middle;fontStyle=1;fontSize=13;fontColor=#dbe4f0;fontFamily=Courier New;" vertex="1" parent="1">
+          <mxGeometry x="60" y="60" width="430" height="26" as="geometry" />
+        </mxCell>
+        <mxCell id="hR" value="edgesim CODE — what stands in for it (class · file)" style="text;html=1;align=center;verticalAlign=middle;fontStyle=1;fontSize=13;fontColor=#dbe4f0;fontFamily=Courier New;" vertex="1" parent="1">
+          <mxGeometry x="560" y="60" width="430" height="26" as="geometry" />
+        </mxCell>
+
+        <!-- SECTION A -->
+        <mxCell id="hA" value="①  THE METER — what is being measured" style="text;html=1;align=left;verticalAlign=middle;fontStyle=1;fontSize=12;fontColor=#9fb0c3;fillColor=#1a2233;strokeColor=none;fontFamily=Courier New;" vertex="1" parent="1">
+          <mxGeometry x="60" y="104" width="930" height="26" as="geometry" />
+        </mxCell>
+
+        <mxCell id="l1" value="🔢 &lt;b&gt;The number on the meter face&lt;/b&gt;&lt;br&gt;&lt;span style=&quot;font-size:11px&quot;&gt;the current reading, and the last one accepted&lt;/span&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#0c2530;strokeColor=#2dd4bf;fontColor=#dbe4f0;fontSize=12;align=left;spacingLeft=10;fontFamily=Courier New;" vertex="1" parent="1">
+          <mxGeometry x="60" y="138" width="430" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="r1" value="&lt;b&gt;DeviceState&lt;/b&gt;.value / .pre_value&lt;br&gt;&lt;span style=&quot;font-size:11px&quot;&gt;&lt;i&gt;device.py&lt;/i&gt;&lt;/span&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#0a2b1e;strokeColor=#34d399;fontColor=#dbe4f0;fontSize=12;align=left;spacingLeft=10;fontFamily=Courier New;" vertex="1" parent="1">
+          <mxGeometry x="560" y="138" width="430" height="60" as="geometry" />
+        </mxCell>
+
+        <mxCell id="l2" value="📟 &lt;b&gt;One meter-reader device&lt;/b&gt;&lt;br&gt;&lt;span style=&quot;font-size:11px&quot;&gt;its id, meter type (water/elec), digit count, decimals&lt;/span&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#0c2530;strokeColor=#2dd4bf;fontColor=#dbe4f0;fontSize=12;align=left;spacingLeft=10;fontFamily=Courier New;" vertex="1" parent="1">
+          <mxGeometry x="60" y="210" width="430" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="r2" value="&lt;b&gt;VirtualDevice&lt;/b&gt; &amp;nbsp;+&amp;nbsp; &lt;b&gt;DeviceConfig&lt;/b&gt;&lt;br&gt;&lt;span style=&quot;font-size:11px&quot;&gt;&lt;i&gt;device.py&lt;/i&gt;&lt;/span&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#0a2b1e;strokeColor=#34d399;fontColor=#dbe4f0;fontSize=12;align=left;spacingLeft=10;fontFamily=Courier New;" vertex="1" parent="1">
+          <mxGeometry x="560" y="210" width="430" height="60" as="geometry" />
+        </mxCell>
+
+        <mxCell id="l3" value="🚰 &lt;b&gt;How usage moves the number&lt;/b&gt;&lt;br&gt;&lt;span style=&quot;font-size:11px&quot;&gt;steady use · a leak spike · a dead meter · a flaky roll&lt;/span&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#0c2530;strokeColor=#2dd4bf;fontColor=#dbe4f0;fontSize=12;align=left;spacingLeft=10;fontFamily=Courier New;" vertex="1" parent="1">
+          <mxGeometry x="60" y="282" width="430" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="r3" value="&lt;b&gt;make_scenario&lt;/b&gt;(kind) → &lt;b&gt;Tick&lt;/b&gt;{delta, rolling}&lt;br&gt;&lt;span style=&quot;font-size:11px&quot;&gt;normal · leak · flatline · lowconf &amp;nbsp;·&amp;nbsp; &lt;i&gt;scenarios.py&lt;/i&gt;&lt;/span&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#0a2b1e;strokeColor=#34d399;fontColor=#dbe4f0;fontSize=12;align=left;spacingLeft=10;fontFamily=Courier New;" vertex="1" parent="1">
+          <mxGeometry x="560" y="282" width="430" height="60" as="geometry" />
+        </mxCell>
+
+        <!-- SECTION B -->
+        <mxCell id="hB" value="②  THE CHIP — the ESP32-CAM's on-chip pipeline" style="text;html=1;align=left;verticalAlign=middle;fontStyle=1;fontSize=12;fontColor=#9fb0c3;fillColor=#1a2233;strokeColor=none;fontFamily=Courier New;" vertex="1" parent="1">
+          <mxGeometry x="60" y="356" width="930" height="26" as="geometry" />
+        </mxCell>
+
+        <mxCell id="l4" value="📸 &lt;b&gt;Camera photographs the digit roller / LCD&lt;/b&gt;&lt;br&gt;&lt;span style=&quot;font-size:11px&quot;&gt;captures the meter face, then crops each digit&lt;/span&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#0c2530;strokeColor=#2dd4bf;fontColor=#dbe4f0;fontSize=12;align=left;spacingLeft=10;fontFamily=Courier New;" vertex="1" parent="1">
+          <mxGeometry x="60" y="390" width="430" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="r4" value="&lt;b&gt;CropBank&lt;/b&gt; · &lt;b&gt;render_strip&lt;/b&gt; · &lt;b&gt;split_strip&lt;/b&gt;&lt;br&gt;&lt;span style=&quot;font-size:11px&quot;&gt;composites a face from &lt;b&gt;real&lt;/b&gt; digit crops &amp;nbsp;·&amp;nbsp; &lt;i&gt;imagery.py&lt;/i&gt;&lt;/span&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#0a2b1e;strokeColor=#34d399;fontColor=#dbe4f0;fontSize=12;align=left;spacingLeft=10;fontFamily=Courier New;" vertex="1" parent="1">
+          <mxGeometry x="560" y="390" width="430" height="60" as="geometry" />
+        </mxCell>
+
+        <mxCell id="l5" value="🧠 &lt;b&gt;On-chip neural net recognizes each digit&lt;/b&gt;&lt;br&gt;&lt;span style=&quot;font-size:11px&quot;&gt;TensorFlow-Lite CNN, no cloud&lt;/span&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#0c2530;strokeColor=#2dd4bf;fontColor=#dbe4f0;fontSize=12;align=left;spacingLeft=10;fontFamily=Courier New;" vertex="1" parent="1">
+          <mxGeometry x="60" y="462" width="430" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="r5" value="&lt;b&gt;DigitReader&lt;/b&gt;.predict_crop → &lt;b&gt;DigitPrediction&lt;/b&gt;&lt;br&gt;&lt;span style=&quot;font-size:11px&quot;&gt;jomjol&#39;s &lt;b&gt;real&lt;/b&gt; dig-class11 TFLite model &amp;nbsp;·&amp;nbsp; &lt;i&gt;reader.py&lt;/i&gt;&lt;/span&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#0a2b1e;strokeColor=#34d399;fontColor=#dbe4f0;fontSize=12;align=left;spacingLeft=10;fontFamily=Courier New;" vertex="1" parent="1">
+          <mxGeometry x="560" y="462" width="430" height="60" as="geometry" />
+        </mxCell>
+
+        <mxCell id="l6" value="🧮 &lt;b&gt;Firmware assembles digits → one reading&lt;/b&gt;&lt;br&gt;&lt;span style=&quot;font-size:11px&quot;&gt;places the decimal, flags uncertain digits&lt;/span&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#0c2530;strokeColor=#2dd4bf;fontColor=#dbe4f0;fontSize=12;align=left;spacingLeft=10;fontFamily=Courier New;" vertex="1" parent="1">
+          <mxGeometry x="60" y="534" width="430" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="r6" value="&lt;b&gt;assemble&lt;/b&gt;() → &lt;b&gt;MeterReadResult&lt;/b&gt;&lt;br&gt;&lt;span style=&quot;font-size:11px&quot;&gt;value / error / confidence / has_nan &amp;nbsp;·&amp;nbsp; &lt;i&gt;assemble.py&lt;/i&gt;&lt;/span&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#0a2b1e;strokeColor=#34d399;fontColor=#dbe4f0;fontSize=12;align=left;spacingLeft=10;fontFamily=Courier New;" vertex="1" parent="1">
+          <mxGeometry x="560" y="534" width="430" height="60" as="geometry" />
+        </mxCell>
+
+        <!-- SECTION C -->
+        <mxCell id="hC" value="③  THE NETWORK — report to the hub" style="text;html=1;align=left;verticalAlign=middle;fontStyle=1;fontSize=12;fontColor=#9fb0c3;fillColor=#1a2233;strokeColor=none;fontFamily=Courier New;" vertex="1" parent="1">
+          <mxGeometry x="60" y="608" width="930" height="26" as="geometry" />
+        </mxCell>
+
+        <mxCell id="l7" value="📦 &lt;b&gt;The MQTT payload it publishes&lt;/b&gt;&lt;br&gt;&lt;span style=&quot;font-size:11px&quot;&gt;value · raw · pre · error · rate · timestamp&lt;/span&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#0c2530;strokeColor=#2dd4bf;fontColor=#dbe4f0;fontSize=12;align=left;spacingLeft=10;fontFamily=Courier New;" vertex="1" parent="1">
+          <mxGeometry x="60" y="642" width="430" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="r7" value="&lt;b&gt;Reading&lt;/b&gt; &amp;nbsp;+&amp;nbsp; &lt;b&gt;Topics&lt;/b&gt; &amp;nbsp;◀ the seam&lt;br&gt;&lt;span style=&quot;font-size:11px&quot;&gt;byte-exact jomjol contract &amp;nbsp;·&amp;nbsp; &lt;i&gt;contract.py&lt;/i&gt;&lt;/span&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#221a33;strokeColor=#a78bfa;fontColor=#dbe4f0;fontSize=12;align=left;spacingLeft=10;fontFamily=Courier New;" vertex="1" parent="1">
+          <mxGeometry x="560" y="642" width="430" height="60" as="geometry" />
+        </mxCell>
+
+        <mxCell id="l8" value="📡 &lt;b&gt;WiFi radio pushes to the broker&lt;/b&gt;&lt;br&gt;&lt;span style=&quot;font-size:11px&quot;&gt;publishes each topic over the network&lt;/span&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#0c2530;strokeColor=#2dd4bf;fontColor=#dbe4f0;fontSize=12;align=left;spacingLeft=10;fontFamily=Courier New;" vertex="1" parent="1">
+          <mxGeometry x="60" y="714" width="430" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="r8" value="&lt;b&gt;Publisher&lt;/b&gt;.publish_reading&lt;br&gt;&lt;span style=&quot;font-size:11px&quot;&gt;paho-mqtt wrapper &amp;nbsp;·&amp;nbsp; &lt;i&gt;publisher.py&lt;/i&gt;&lt;/span&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#0a2b1e;strokeColor=#34d399;fontColor=#dbe4f0;fontSize=12;align=left;spacingLeft=10;fontFamily=Courier New;" vertex="1" parent="1">
+          <mxGeometry x="560" y="714" width="430" height="60" as="geometry" />
+        </mxCell>
+
+        <mxCell id="l9" value="🛰️ &lt;b&gt;Many chips on a timer report to a hub&lt;/b&gt;&lt;br&gt;&lt;span style=&quot;font-size:11px&quot;&gt;the whole fleet, each on its own interval&lt;/span&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#0c2530;strokeColor=#2dd4bf;fontColor=#dbe4f0;fontSize=12;align=left;spacingLeft=10;fontFamily=Courier New;" vertex="1" parent="1">
+          <mxGeometry x="60" y="786" width="430" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="r9" value="&lt;b&gt;run_fleet&lt;/b&gt; &amp;nbsp;+&amp;nbsp; &lt;b&gt;FleetConfig&lt;/b&gt; / &lt;b&gt;FleetDeviceSpec&lt;/b&gt;&lt;br&gt;&lt;span style=&quot;font-size:11px&quot;&gt;asyncio loop over N devices &amp;nbsp;·&amp;nbsp; &lt;i&gt;fleet.py&lt;/i&gt;&lt;/span&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#0a2b1e;strokeColor=#34d399;fontColor=#dbe4f0;fontSize=12;align=left;spacingLeft=10;fontFamily=Courier New;" vertex="1" parent="1">
+          <mxGeometry x="560" y="786" width="430" height="60" as="geometry" />
+        </mxCell>
+
+        <!-- dashed "maps to" connectors -->
+        <mxCell id="c1" value="" style="edgeStyle=none;html=1;dashed=1;strokeColor=#8b98ab;endArrow=classic;startArrow=none;exitX=1;exitY=0.5;entryX=0;entryY=0.5;fontFamily=Courier New;fontColor=#dbe4f0;" edge="1" parent="1" source="l1" target="r1"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="c2" value="" style="edgeStyle=none;html=1;dashed=1;strokeColor=#8b98ab;endArrow=classic;startArrow=none;exitX=1;exitY=0.5;entryX=0;entryY=0.5;fontFamily=Courier New;fontColor=#dbe4f0;" edge="1" parent="1" source="l2" target="r2"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="c3" value="" style="edgeStyle=none;html=1;dashed=1;strokeColor=#8b98ab;endArrow=classic;startArrow=none;exitX=1;exitY=0.5;entryX=0;entryY=0.5;fontFamily=Courier New;fontColor=#dbe4f0;" edge="1" parent="1" source="l3" target="r3"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="c4" value="" style="edgeStyle=none;html=1;dashed=1;strokeColor=#8b98ab;endArrow=classic;startArrow=none;exitX=1;exitY=0.5;entryX=0;entryY=0.5;fontFamily=Courier New;fontColor=#dbe4f0;" edge="1" parent="1" source="l4" target="r4"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="c5" value="" style="edgeStyle=none;html=1;dashed=1;strokeColor=#8b98ab;endArrow=classic;startArrow=none;exitX=1;exitY=0.5;entryX=0;entryY=0.5;fontFamily=Courier New;fontColor=#dbe4f0;" edge="1" parent="1" source="l5" target="r5"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="c6" value="" style="edgeStyle=none;html=1;dashed=1;strokeColor=#8b98ab;endArrow=classic;startArrow=none;exitX=1;exitY=0.5;entryX=0;entryY=0.5;fontFamily=Courier New;fontColor=#dbe4f0;" edge="1" parent="1" source="l6" target="r6"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="c7" value="" style="edgeStyle=none;html=1;dashed=1;strokeColor=#8b98ab;endArrow=classic;startArrow=none;exitX=1;exitY=0.5;entryX=0;entryY=0.5;fontFamily=Courier New;fontColor=#dbe4f0;" edge="1" parent="1" source="l7" target="r7"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="c8" value="" style="edgeStyle=none;html=1;dashed=1;strokeColor=#8b98ab;endArrow=classic;startArrow=none;exitX=1;exitY=0.5;entryX=0;entryY=0.5;fontFamily=Courier New;fontColor=#dbe4f0;" edge="1" parent="1" source="l8" target="r8"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="c9" value="" style="edgeStyle=none;html=1;dashed=1;strokeColor=#8b98ab;endArrow=classic;startArrow=none;exitX=1;exitY=0.5;entryX=0;entryY=0.5;fontFamily=Courier New;fontColor=#dbe4f0;" edge="1" parent="1" source="l9" target="r9"><mxGeometry relative="1" as="geometry" /></mxCell>
+
+        <mxCell id="foot" value="Same code, real chip later: a flashed ESP32-CAM replaces section ② and publishes the identical section ③ contract — nothing downstream changes." style="text;html=1;align=center;verticalAlign=middle;fontSize=12;fontColor=#9fb0c3;fontStyle=2;fontFamily=Courier New;" vertex="1" parent="1">
+          <mxGeometry x="60" y="866" width="930" height="30" as="geometry" />
+        </mxCell>
+
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

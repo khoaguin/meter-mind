@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mxfile host="drawio" version="30.2.6">
+  <diagram name="Tick-Pipeline">
+    <mxGraphModel background="#0a0f1c" dx="900" dy="900" grid="0" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="2200" pageHeight="560" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+
+        <mxCell id="ttl" value="One tick of one VirtualDevice — exactly what a flashed ESP32-CAM does on-chip, run off-device in Python" style="text;html=1;align=center;verticalAlign=middle;fontStyle=1;fontSize=18;fontColor=#e6eefb;fontFamily=Courier New;" vertex="1" parent="1">
+          <mxGeometry x="40" y="16" width="2060" height="28" as="geometry" />
+        </mxCell>
+        <mxCell id="sub" value="every interval, for each device — VirtualDevice.step(delta, rolling, now)  ·  device.py orchestrates the whole chain below" style="text;html=1;align=center;verticalAlign=middle;fontSize=12;fontColor=#9fb0c3;fontFamily=Courier New;" vertex="1" parent="1">
+          <mxGeometry x="40" y="46" width="2060" height="22" as="geometry" />
+        </mxCell>
+
+        <!-- Stage boxes -->
+        <mxCell id="p1" value="&lt;b&gt;①  Usage tick&lt;/b&gt;&lt;br&gt;&lt;br&gt;pick this interval&#39;s change:&lt;br&gt;&lt;b&gt;Tick&lt;/b&gt;{delta, rolling}&lt;br&gt;&lt;br&gt;&lt;span style=&quot;font-size:11px&quot;&gt;&lt;i&gt;scenarios.py&lt;/i&gt;&lt;/span&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#0c2530;strokeColor=#2dd4bf;fontColor=#dbe4f0;fontSize=12;fontFamily=Courier New;" vertex="1" parent="1">
+          <mxGeometry x="40" y="130" width="240" height="150" as="geometry" />
+        </mxCell>
+
+        <mxCell id="p2" value="&lt;b&gt;②  Advance the meter&lt;/b&gt;&lt;br&gt;&lt;br&gt;state.value += delta&lt;br&gt;→ zero-padded digit string&lt;br&gt;e.g. &lt;b&gt;&quot;11234&quot;&lt;/b&gt;&lt;br&gt;&lt;br&gt;&lt;span style=&quot;font-size:11px&quot;&gt;&lt;i&gt;device.py&lt;/i&gt;&lt;/span&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#0c2530;strokeColor=#2dd4bf;fontColor=#dbe4f0;fontSize=12;fontFamily=Courier New;" vertex="1" parent="1">
+          <mxGeometry x="320" y="130" width="240" height="150" as="geometry" />
+        </mxCell>
+
+        <mxCell id="p3" value="&lt;b&gt;③  Paint the meter face&lt;/b&gt;&lt;br&gt;&lt;br&gt;composite &lt;b&gt;REAL&lt;/b&gt; labeled digit&lt;br&gt;crops into a strip image&lt;br&gt;(inject NaN if rolling)&lt;br&gt;&lt;br&gt;&lt;span style=&quot;font-size:11px&quot;&gt;&lt;i&gt;imagery.py&lt;/i&gt; — CropBank,&lt;br&gt;render_strip, split_strip&lt;/span&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#0c2530;strokeColor=#2dd4bf;fontColor=#dbe4f0;fontSize=12;fontFamily=Courier New;" vertex="1" parent="1">
+          <mxGeometry x="600" y="130" width="240" height="150" as="geometry" />
+        </mxCell>
+
+        <mxCell id="p4" value="&lt;b&gt;④  Read the digits&lt;/b&gt; 🧠&lt;br&gt;&lt;br&gt;jomjol&#39;s &lt;b&gt;real&lt;/b&gt; dig-class11&lt;br&gt;TFLite CNN, per crop →&lt;br&gt;&lt;b&gt;DigitPrediction&lt;/b&gt;{class, conf}&lt;br&gt;&lt;br&gt;&lt;span style=&quot;font-size:11px&quot;&gt;&lt;i&gt;reader.py&lt;/i&gt; — DigitReader&lt;/span&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#0a2b1e;strokeColor=#34d399;fontColor=#dbe4f0;fontSize=12;fontStyle=0;fontFamily=Courier New;" vertex="1" parent="1">
+          <mxGeometry x="880" y="130" width="240" height="150" as="geometry" />
+        </mxCell>
+
+        <mxCell id="p5" value="&lt;b&gt;⑤  Assemble the number&lt;/b&gt;&lt;br&gt;&lt;br&gt;digits → &lt;b&gt;MeterReadResult&lt;/b&gt;&lt;br&gt;value · error · confidence&lt;br&gt;(NaN → hold last good)&lt;br&gt;&lt;br&gt;&lt;span style=&quot;font-size:11px&quot;&gt;&lt;i&gt;assemble.py&lt;/i&gt;&lt;/span&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#0c2530;strokeColor=#2dd4bf;fontColor=#dbe4f0;fontSize=12;fontFamily=Courier New;" vertex="1" parent="1">
+          <mxGeometry x="1160" y="130" width="240" height="150" as="geometry" />
+        </mxCell>
+
+        <mxCell id="p6" value="&lt;b&gt;⑥  Wrap in jomjol payload&lt;/b&gt;&lt;br&gt;&lt;br&gt;&lt;b&gt;Reading&lt;/b&gt;{value, raw, pre,&lt;br&gt;error, rate, timestamp}&lt;br&gt;+ &lt;b&gt;Topics&lt;/b&gt; ◀ the seam&lt;br&gt;&lt;br&gt;&lt;span style=&quot;font-size:11px&quot;&gt;&lt;i&gt;contract.py&lt;/i&gt;&lt;/span&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#221a33;strokeColor=#a78bfa;fontColor=#dbe4f0;fontSize=12;fontFamily=Courier New;" vertex="1" parent="1">
+          <mxGeometry x="1440" y="130" width="240" height="150" as="geometry" />
+        </mxCell>
+
+        <mxCell id="p7" value="&lt;b&gt;⑦  Publish to MQTT&lt;/b&gt;&lt;br&gt;&lt;br&gt;flat fields (5) + /json&lt;br&gt;+ /confidence + /MeterType&lt;br&gt;+ status topics&lt;br&gt;&lt;br&gt;&lt;span style=&quot;font-size:11px&quot;&gt;&lt;i&gt;publisher.py&lt;/i&gt; — Publisher&lt;/span&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#0c2530;strokeColor=#2dd4bf;fontColor=#dbe4f0;fontSize=12;fontFamily=Courier New;" vertex="1" parent="1">
+          <mxGeometry x="1720" y="130" width="240" height="150" as="geometry" />
+        </mxCell>
+
+        <mxCell id="broker" value="&lt;b&gt;📨 MQTT&lt;br&gt;broker&lt;/b&gt;&lt;br&gt;&lt;span style=&quot;font-size:11px&quot;&gt;mosquitto&lt;/span&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#2e250f;strokeColor=#d7b357;fontColor=#dbe4f0;fontSize=12;fontFamily=Courier New;" vertex="1" parent="1">
+          <mxGeometry x="2000" y="150" width="120" height="110" as="geometry" />
+        </mxCell>
+
+        <!-- arrows -->
+        <mxCell id="a1" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;exitX=1;exitY=0.5;entryX=0;entryY=0.5;endArrow=classic;strokeWidth=2;fontFamily=Courier New;fontColor=#dbe4f0;strokeColor=#9fb0c3;" edge="1" parent="1" source="p1" target="p2"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="a2" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;exitX=1;exitY=0.5;entryX=0;entryY=0.5;endArrow=classic;strokeWidth=2;fontFamily=Courier New;fontColor=#dbe4f0;strokeColor=#9fb0c3;" edge="1" parent="1" source="p2" target="p3"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="a3" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;exitX=1;exitY=0.5;entryX=0;entryY=0.5;endArrow=classic;strokeWidth=2;fontFamily=Courier New;fontColor=#dbe4f0;strokeColor=#9fb0c3;" edge="1" parent="1" source="p3" target="p4"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="a4" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;exitX=1;exitY=0.5;entryX=0;entryY=0.5;endArrow=classic;strokeWidth=2;fontFamily=Courier New;fontColor=#dbe4f0;strokeColor=#9fb0c3;" edge="1" parent="1" source="p4" target="p5"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="a5" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;exitX=1;exitY=0.5;entryX=0;entryY=0.5;endArrow=classic;strokeWidth=2;fontFamily=Courier New;fontColor=#dbe4f0;strokeColor=#9fb0c3;" edge="1" parent="1" source="p5" target="p6"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="a6" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;exitX=1;exitY=0.5;entryX=0;entryY=0.5;endArrow=classic;strokeWidth=2;fontFamily=Courier New;fontColor=#dbe4f0;strokeColor=#9fb0c3;" edge="1" parent="1" source="p6" target="p7"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="a7" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;exitX=1;exitY=0.5;entryX=0;entryY=0.5;endArrow=classic;strokeWidth=2;fontFamily=Courier New;fontColor=#dbe4f0;strokeColor=#9fb0c3;" edge="1" parent="1" source="p7" target="broker"><mxGeometry relative="1" as="geometry" /></mxCell>
+
+        <!-- honesty callout under CNN -->
+        <mxCell id="note" value="🎯  Real model, real pixels — jomjol&#39;s actual CNN runs over in-distribution digit crops. Honest &quot;Physical AI&quot;, no hardware." style="rounded=1;whiteSpace=wrap;html=1;fillColor=#1a2233;strokeColor=#34d399;fontColor=#dbe4f0;fontSize=12;dashed=1;fontFamily=Courier New;" vertex="1" parent="1">
+          <mxGeometry x="600" y="320" width="520" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="noteEdge" value="" style="edgeStyle=none;html=1;dashed=1;strokeColor=#34d399;endArrow=none;exitX=0.5;exitY=1;entryX=0.5;entryY=0;fontFamily=Courier New;fontColor=#dbe4f0;" edge="1" parent="1" source="p4" target="note"><mxGeometry relative="1" as="geometry" /></mxCell>
+
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>
