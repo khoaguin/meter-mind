@@ -1,1 +1,1 @@
-"""edgesim — simulated fleet of jomjol ESP32-CAM meter readers."""
+"""edgesim — simulated ESP32-CAM meter-reader fleet (jomjol-native MQTT contract)."""
