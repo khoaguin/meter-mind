@@ -6,9 +6,13 @@ from edgesim.fleet import FleetConfig, FleetDeviceSpec, run_fleet
 class RecordingPublisher:
     def __init__(self, *_a, **_k):
         self.readings = []
+        self.disconnected = False
 
     def connect(self):
         pass
+
+    def disconnect(self):
+        self.disconnected = True
 
     def publish_reading(self, topics, reading, confidence, meter_type):
         self.readings.append((topics.main_topic, reading.value))
@@ -57,3 +61,5 @@ def test_run_fleet_steps_all_devices(digits_dir, model_path):
     # 2 devices x 3 ticks = 6 readings
     assert len(rec.readings) == 6
     assert {r[0] for r in rec.readings} == {"k1-water", "k2-elec"}
+    # fleet must disconnect the publisher on exit (teardown contract)
+    assert rec.disconnected
