@@ -6,6 +6,7 @@ readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [
     "ai-edge-litert>=2.1.6",
+    "loguru>=0.7.3",
     "numpy>=2.5.0",
     "paho-mqtt>=2.1.0",
     "pillow>=12.3.0",
@@ -27,6 +28,8 @@ module-name = "edgesim"
 testpaths = ["tests"]
 pythonpath = ["src"]
 markers = ["integration: requires a running mosquitto on localhost:1883"]
+# integration tests need a live broker — opt in with `pytest -m integration`
+addopts = "-m 'not integration'"
 
 [dependency-groups]
 dev = [
