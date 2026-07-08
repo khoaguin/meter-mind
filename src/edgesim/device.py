@@ -21,7 +21,6 @@ class DeviceConfig(BaseModel):
 class DeviceState(BaseModel):
     value: float
     pre_value: float
-    rolling: bool = False
 
 
 class StepResult(BaseModel):
@@ -58,10 +57,14 @@ class VirtualDevice:
             self.state.value = self.state.pre_value  # hold last good
             rate = 0.0
         else:
-            rate = self.state.value - self.state.pre_value
+            # rate is derived from the reported (OCR) value, not ground truth —
+            # jomjol has no ground-truth field, so a misread must be reflected here
+            rate = float(result.value) - self.state.pre_value
         reading = Reading(
             value=result.value,
-            raw=self._fmt(self.state.value),
+            # `raw` is the uncorrected OCR result, not the true meter state;
+            # no correction step exists, so it mirrors the read value
+            raw=result.value,
             pre=self._fmt(self.state.pre_value),
             error=result.error,
             rate=f"{rate:.6f}",
