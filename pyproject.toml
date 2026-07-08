@@ -27,6 +27,9 @@ module-name = "edgesim"
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 pythonpath = ["src"]
+markers = ["integration: requires a running mosquitto on localhost:1883"]
+# integration tests need a live broker — opt in with `pytest -m integration`
+addopts = "-m 'not integration'"
 
 [dependency-groups]
 dev = [
