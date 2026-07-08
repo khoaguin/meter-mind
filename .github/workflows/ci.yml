@@ -1,0 +1,90 @@
+name: CI
+
+# Two layers, all free of secrets and network spend:
+#   contract — seconds; lint + types + the jomjol JSON/topic contract test
+#              (tests/test_contract.py needs no downloaded assets). Safe to
+#              require as a status check before merge.
+#   unit     — seconds; fetches the tflite model + digit crops (cached),
+#              then `just test`. Reader tests skip if the fetch is flaky,
+#              so this stays green either way. Safe to require.
+#
+# Not here yet: an e2e-mock layer over the MQTT publish path (docker
+# mosquitto + the integration tests). Those live in the unmerged
+# 10-integration worktree — add a third job when they land on main.
+#
+# Runs on GitHub-hosted runners. If this repo gets enrolled in the org's
+# Namespace GitHub App, swap `runs-on: ubuntu-latest` for
+# `namespace-profile-default` (as in syft-influencer).
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+# Cancel superseded runs on the same ref.
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  contract:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0  # v7.0.0
+
+      - uses: astral-sh/setup-uv@fac544c07dec837d0ccb6301d7b5580bf5edae39  # v8.2.0
+        with:
+          version: "latest"
+          enable-cache: true
+          cache-dependency-glob: "uv.lock"
+
+      - name: Set up Python
+        run: uv python install 3.12
+
+      - name: Install dependencies
+        run: uv sync
+
+      - name: Lint
+        run: uv run ruff check .
+
+      - name: Type check
+        run: uv run pyrefly check
+
+      - name: Contract test (jomjol JSON payload + MQTT topics; no assets)
+        run: uv run pytest tests/test_contract.py
+
+  unit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0  # v7.0.0
+
+      - uses: astral-sh/setup-uv@fac544c07dec837d0ccb6301d7b5580bf5edae39  # v8.2.0
+        with:
+          version: "latest"
+          enable-cache: true
+          cache-dependency-glob: "uv.lock"
+
+      - name: Set up Python
+        run: uv python install 3.12
+
+      - name: Install dependencies
+        run: uv sync
+
+      - name: Install just
+        uses: extractions/setup-just@53165ef7e734c5c07cb06b3c8e7b647c5aa16db3  # v4.0.0
+
+      # Model + digit crops only re-download when the fetch script changes.
+      - name: Cache fetched assets
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9  # v6.1.0
+        with:
+          path: data
+          key: assets-${{ hashFiles('scripts/fetch_assets.py') }}
+
+      - name: Fetch model + digit crops
+        run: just fetch-assets
+
+      - name: Unit tests
+        run: just test
