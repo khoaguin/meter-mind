@@ -1,7 +1,15 @@
 project-includes = ["**/*.py"]
+# Worktrees live under `.trees/`, so this checkout's own path contains a `.trees`
+# ancestor. Respecting .gitignore (which lists `.trees/`) would match that ancestor
+# and skip every source file (0 files -> pre-push type check fails). Rely on the
+# explicit excludes below instead.
+use-ignore-files = false
+# Use exactly the excludes below; don't auto-append pyrefly's default globs
+# (a `**/venv/**` style default was matching this checkout's path).
+disable-project-excludes-heuristics = true
 project-excludes = [
     "**/.venv/**",
-    "**/.trees/**",
+    ".trees/**",
     "**/node_modules/**",
     "**/__pycache__/**",
 ]

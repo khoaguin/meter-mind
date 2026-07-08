@@ -13,6 +13,12 @@ class FakeClient:
     def loop_start(self):
         pass
 
+    def loop_stop(self):
+        pass
+
+    def disconnect(self):
+        self.connected = False
+
     def publish(self, topic, payload):
         self.published.append((topic, payload))
 
