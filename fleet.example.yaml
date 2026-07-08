@@ -1,0 +1,27 @@
+broker_host: localhost
+broker_port: 1883
+interval_seconds: 3.0
+model_path: data/models/dig-class11_1701_s2.tflite
+digits_dir: data/digits
+devices:
+  - device_id: kiosk1
+    main_topic: kiosk1-water
+    meter_type: water
+    n_digits: 5
+    decimals: 3
+    start_value: 10.0
+    scenario: normal
+  - device_id: kiosk2
+    main_topic: kiosk2-water
+    meter_type: water
+    n_digits: 5
+    decimals: 3
+    start_value: 8.5
+    scenario: leak
+  - device_id: kiosk3
+    main_topic: kiosk3-elec
+    meter_type: electricity
+    n_digits: 5
+    decimals: 1
+    start_value: 120.0
+    scenario: lowconf
