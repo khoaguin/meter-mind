@@ -3,6 +3,7 @@ from collections.abc import Callable
 from typing import Protocol
 
 import yaml
+from loguru import logger
 from pydantic import BaseModel
 
 from edgesim.contract import Reading, Topics
@@ -17,6 +18,8 @@ class PublisherLike(Protocol):
     """Subset of the Publisher surface the fleet loop uses (test-injectable)."""
 
     def connect(self) -> None: ...
+
+    def disconnect(self) -> None: ...
 
     def publish_reading(
         self, topics: Topics, reading: Reading, confidence: float, meter_type: str
@@ -75,12 +78,28 @@ async def run_fleet(
     pub = publisher_factory(cfg.broker_host, cfg.broker_port)
     pub.connect()
 
-    tick = 0
-    while max_ticks is None or tick < max_ticks:
-        for dev, scenario, topics in devices:
-            t = scenario(tick)
-            res = dev.step(t.delta, t.rolling, now_fn())
-            pub.publish_reading(topics, res.reading, res.confidence, res.meter_type)
-        tick += 1
-        if max_ticks is None or tick < max_ticks:
-            await asyncio.sleep(cfg.interval_seconds)
+    try:
+        tick = 0
+        while max_ticks is None or tick < max_ticks:
+            for dev, scenario, topics in devices:
+                # isolate each device: a bad reader/publish must not down the fleet
+                try:
+                    t = scenario(tick)
+                    res = dev.step(t.delta, t.rolling, now_fn())
+                    pub.publish_reading(
+                        topics, res.reading, res.confidence, res.meter_type
+                    )
+                except Exception:
+                    logger.exception(
+                        "device {} failed on tick {} — skipping",
+                        dev.cfg.device_id,
+                        tick,
+                    )
+            tick += 1
+            if max_ticks is None or tick < max_ticks:
+                await asyncio.sleep(cfg.interval_seconds)
+    finally:
+        # clean disconnect on normal exit, Ctrl-C, or crash
+        disconnect = getattr(pub, "disconnect", None)
+        if callable(disconnect):
+            disconnect()
