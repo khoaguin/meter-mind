@@ -196,10 +196,13 @@ Adding a device is one YAML block. A real ESP32-CAM joins the same fleet by sett
 
 ## Testing & CI
 
-Tests live in `tests/`, one file per module, and **call the production code paths directly** (no shims). CI runs two lightweight, secret-free jobs:
+Tests live in `tests/`, one file per module, and **call the production code paths directly** (no shims). CI runs three secret-free jobs:
 
 - **contract** — lint (`ruff`) + type-check (`pyrefly`) + the jomjol JSON/topic contract test. Needs no downloaded assets, runs in seconds.
 - **unit** — fetches the TFLite model + digit crops (cached), then runs the full suite. Reader tests skip gracefully if the fetch is flaky, so the job stays green either way.
+- **e2e** — spins up the docker-compose mosquitto broker and runs the MQTT integration test (`test_integration_mqtt.py`, marked `@pytest.mark.integration`) **over the wire**: a real subscriber on a real broker receives a device's readings and asserts the byte-exact `/json` key order, the 5 flat fields (no flat `/pre`), and the additive `confidence`/`MeterType` topics. This is the test that actually **proves the seam** — the exact bytes a downstream hub (or a flashed ESP32-CAM) will see.
+
+Run the E2E test locally with the broker up: `uv run pytest -m integration`.
 
 ---
 

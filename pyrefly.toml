@@ -10,8 +10,12 @@ disable-project-excludes-heuristics = true
 project-excludes = [
     "**/.venv/**",
     ".trees/**",
+    # Vendored third-party reference code (AI-on-the-edge-device). Untracked and
+    # not ours to type-check; its own violations must not block our pushes.
+    "refs/**",
     "**/node_modules/**",
     "**/__pycache__/**",
+    ".dk/**",
 ]
 python-version = "3.12"
 

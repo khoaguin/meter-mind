@@ -74,85 +74,127 @@ flowchart BT
     AGENT["🤖 Agentic Copilot — Claude + tools\nquery_readings · compute_invoice · list_unpaid\ndraft_reminder · mark_paid · get_low_confidence · request_recapture"]
     CORE --> AGENT
 
-    %% ---------- Layer 5: owner UI (top) ----------
-    UI["🖥️ Owner UI — chat (VN/EN) + fleet dashboard\ndevices · latest reads · paid/unpaid"]
+    %% ---------- Layer 5: owner-facing channels (top) ----------
+    UI["🖥️ Owner UI — read-only dashboard (backup + visual)\ndevices · latest reads · paid/unpaid"]
+    VOICE["🔊 Voice Copilot — Agora xiaozhi ESP32-S3 + My Bot\nASR · LLM · TTS · calls our MCP tools (VN/EN)"]
     AGENT --> UI
+    AGENT --> VOICE
 
-    %% ---------- feedback loop: recapture request flows back down ----------
+    %% ---------- feedback loops ----------
     AGENT -. "low confidence → request_recapture" .-> CHIPS
     UI -. "owner confirms reading" .-> AGENT
+    VOICE -. "🗣️ owner asks · 🔊 spoken answer" .-> AGENT
 
     classDef phys fill:#1e3a5f,stroke:#4a90d9,color:#fff
     classDef det fill:#3d2c4f,stroke:#9b59b6,color:#fff
     classDef ai fill:#1f4f3d,stroke:#27ae60,color:#fff
+    classDef voice fill:#4a3a1e,stroke:#e8b339,color:#fff
     class METERS,CHIPS,HUB phys
     class CORE det
     class AGENT,UI ai
+    class VOICE voice
 ```
 
 
 ---
 
-## 3. Hardware
+## 3. Voice copilot on the Agora ESP32-S3 (AABW Physical AI track)
 
-The fleet runs on the **classic AI-Thinker ESP32-CAM** — the one board jomjol's firmware actually supports. (ESP32-S3 / S3-EYE are explicitly *not* supported: wrong chip family, no firmware target. Don't buy those.)
+The agentic ops layer (§2) is text-first — a chat box + dashboard. The event provides an **Agora ESP32-S3 device** (a *xiaozhi* 1.54" TFT board — mic, speaker, display, WiFi) plus Agora's **My Bot / ConvoAI** platform (`mybot.sg3.agoralab.co`), which runs **ASR + LLM + TTS** for us. We use one as the **owner's voice interface**: the owner *talks* to a physical box and the agent *speaks back* (Vietnamese / English) — a new channel on top of the Owner-UI layer in the §2 diagram, powered by the same Core tools.
 
-**Candidate board (sourced locally, jomjol-compatible per the [jomjol docs](https://github.com/jomjol/AI-on-the-edge-device)):**
+**Two device families — different chips, different jobs:**
 
-![ESP32-CAM listing — classic LX6 board + Micro-C programming dock](assets/chip.png)
+| Device | Chip | Role (P1 verbs) | Status |
+|---|---|---|---|
+| Meter reader | classic ESP32-**CAM** (jomjol) | **see** — read the dial on-chip | simulated fleet (built) |
+| Voice copilot | Agora **xiaozhi ESP32-S3** | **listen + speak** — the owner's interface | new — real hardware at the event |
 
-What the listing confirms vs. what it doesn't:
+The Agora **S3 cannot run jomjol's meter firmware** (jomjol targets only the classic LX6 CAM), so it
+is *never* a meter reader — purely the conversation box. Clean split, no overlap.
 
-| Signal in listing | Reading | jomjol verdict |
-|---|---|---|
-| Board photo: AI-Thinker form factor, on-board WiFi/BT module, flash LED, `RST` button, left-side dock | **Classic ESP32-CAM (LX6)** + **OV2640** camera | ✅ jomjol's **only** supported target. NOT an ESP32-S3. |
-| Title "**2M**" | **2 Megapixel camera (OV2640)** — *not* a memory spec | ✅ correct camera. ⚠️ **don't misread "2M" as PSRAM** — unrelated numbers. |
-| Variant "**+ Đế + Cáp**" | board + **Micro-C programming dock** + cable | ✅ solves classic ESP32-CAM's no-USB problem → flash jomjol firmware directly. |
-| "**Trả hàng miễn phí 15 ngày**" | **15-day free return** | ✅ the safety net — flash day one, verify PSRAM in the web UI, return any dud. |
-| "**269.705đ**" after voucher, free ship, 4h delivery | ~270k đ/kit, fast local | ✅ fits the BOM (~$50–60 for 3–4 kits). |
-| Seller **Linh Kiện NtShop** — 4.8★, 114 sold, 99% response | established local seller | ✅ low risk; **chat them to confirm 8MB PSRAM** before ordering. |
-| **PSRAM size** | ❌ **not stated anywhere in the listing** | ⚠️ **the one unverified fact.** Current firmware needs ~4MB heap; **8MB strongly recommended** (4MB batches often fail "PSRAM init"). Confirm 8MB (ESP-PSRAM64 / AP6404L) with seller or on arrival. |
+**The voice channel:**
 
-**Net:** chip family, camera, and programming dock are all confirmed correct for jomjol from this screenshot. The **only** open risk is **PSRAM capacity** — invisible in the listing, so it's buy-and-verify (the 15-day return covers it). Buy **3–4 units** (budget one dud), flash jomjol, check PSRAM size in the web UI, return anything under 8MB.
-
-> **For the hack, hardware is not on the critical path.** We build the whole stack against a **simulated fleet** first (see plan in `.planning/2026-06-27-simulated-edge-fleet.md`), and a real ESP32-CAM drops in later as just one more device on the same MQTT contract.
-
-## Simulation
-
-Start fully in software; buy chips later. A Python **virtual fleet** stands in for the ESP32-CAMs and emits the *exact* jomjol MQTT contract, so a real chip drops in later as just one more device — zero downstream change.
-
-Each virtual device, every interval:
-
-```
-value += scenario_delta
-  → composite a meter image from REAL labeled digit crops (jomjol's dataset)
-  → run jomjol's REAL dig-class11 TFLite model → digit + confidence
-  → publish native jomjol topics: <MainTopic>/main/{value,json,…}
+```mermaid
+flowchart LR
+    OWNER["🗣️ Owner\n(VN / EN)"] -->|speaks| DEV["📟 xiaozhi ESP32-S3\nmic · speaker · display"]
+    DEV <-->|audio| BOT["☁️ Agora My Bot\nASR + TTS + persona"]
+    BOT -->|prompt| BRAIN{"🧠 the brain\n(pick one)"}
+    BRAIN -->|"A ✅ My Bot LLM + MCP"| TOOLS["🔌 Core tools\nquery_readings · compute_invoice · ..."]
+    BRAIN -->|"B custom LLM (Claude / OpenAI / Gemini)"| TOOLS
+    TOOLS -->|Core API| CORE["⚙️ Deterministic Core\nreadings · bills · anomalies"]
+    CORE --> DBB[("🗄️ DB")]
+    BOT -->|spoken answer| DEV
 ```
 
-- **Real model, real pixels** — runs jomjol's actual CNN off-device on in-distribution crops. Honest "Physical AI", no hardware.
-- **Scripted scenarios** drive the demo: `normal` · `leak` (spike) · `flatline` (broken) · `lowconf` (mid-roll NaN → escalation loop).
-- **The contract is the seam** — `/json` is byte-exact jomjol; `meter_type` + `confidence` ride on additive topics (jomjol doesn't emit them natively).
+**What the owner asks (by voice), answered by the agent:**
+- **Measuring** — "kiosk 3 tháng này bao nhiêu?" → latest / tracked readings.
+- **Invoicing** — "hóa đơn phòng 2?" → usage × tariff.
+- **Payment tracking** — "ai chưa trả tiền?" → who's unpaid (chasing = stretch).
+- **Anomaly** — "sao kiosk 3 cao vậy?" → leak / spike / misread explanation.
+- **Reporting** — plain-language summaries.
 
-### Sim stack
+**How the voice box reaches our tools — two options.** Agora's *My Bot* always handles **ASR + TTS**
+and the persona/voice; what differs is **where the LLM "brain" lives** — and both paths call the
+*same* Core tools underneath.
 
-| Piece | Tool | Why |
+| | **Option A — Agora LLM + MCP** ✅ *default* | **Option B — bring-your-own-LLM** |
 |---|---|---|
-| Language / env | **Python 3.11 + `uv`** | project standard |
-| Run jomjol's CNN | **`ai-edge-litert`** (LiteRT; `tensorflow` fallback) | loads the real `dig-class11.tflite` off-device |
-| Images | **`pillow`** | composite real digit crops into a meter strip |
-| Arrays / tensors | **`numpy`** | feed the `[1,32,20,3]` input tensor |
-| MQTT publish | **`paho-mqtt`** | emit jomjol-native topics |
-| Broker | **mosquitto** (Docker) | the message bus — same one real chips use |
-| Data models | **`pydantic` v2** | `Reading` payload + device configs |
-| Config | **`pyyaml`** | `fleet.yaml` = list of devices + scenarios |
-| Tests | **`pytest`** | TDD per task |
-| Fleet loop | **`asyncio`** (stdlib) | N devices on a timer |
+| The brain | My Bot's built-in LLM | our agent: **Claude / OpenAI / Gemini** |
+| We build | an **MCP server** exposing the Core tools + a system prompt | a **custom LLM endpoint** (OpenAI-compatible) running the agent loop + tools |
+| Effort | low — thin MCP wrapper over the Core API | higher — host the agent + endpoint |
+| Model control | Agora-managed LLM | we pick the exact model |
+| Confirm w/ mentors | the MCP-server field (documented in the guide) | whether My Bot accepts a custom LLM endpoint (not documented) |
 
-**Inputs we pull (data, not deps):**
-- `dig-class11_1701_s2.tflite` — jomjol's real model
-- labeled digit crops — jomjol's `neural-network-digital-counter-readout` dataset (the "real frames")
+Both reuse the **same Core API** — the §2 seam. Option A surfaces it over **MCP**; Option B calls it
+inside the agent. **Claude can power the smart bits either way**: even under Option A, tools like
+`explain_anomaly` / `draft_reminder` call Claude *inside* the MCP server to turn numbers into
+plain-language Vietnamese. Confirm the wiring with the Agora mentors / Discord early — it's the one
+real integration risk.
 
-No new infra, no cloud — runs entirely on a laptop. Real hardware later adds only a physical camera; the model and the contract stay identical.
+**E2E demo:** a person asks *"who hasn't paid?"*
+in Vietnamese, and hears a spoken answer computed from a live (simulated) meter fleet running jomjol's real CNN. **Real voice hardware + real vision model + agentic reasoning** — listen, speak, see, and act, end-to-end.
 
-Full TDD plan (10 tasks): [`.planning/2026-06-27-simulated-edge-fleet.md`](.planning/2026-06-27-simulated-edge-fleet.md).
+### What we decided — and why
+
+Four calls that set the scope. Each is chosen to **cut live-demo risk** and play to the Physical-AI
+*listen · speak · see · act* story.
+
+- [x] **Voice-first, with a minimal read-only dashboard as backup** — one page (the Owner-UI layer
+      from §2: devices · latest reads · paid/unpaid), reading the same Core tools.
+      **Why:** live voice fails in the worst place — on stage (network, an accent, a mumble). The
+      screen is a visual the judges *see* while the box talks, a fallback if audio dies, and our debug
+      tool while building. Nearly free (same Core API) — cheap insurance. One page only; no feature-creep.
+
+- [x] **Read-only answers + exactly one safe action: `request_recapture`** — `draft_reminder` (drafts,
+      never sends) as a stretch; **no `mark_paid` by voice** unless behind a spoken confirmation.
+      **Why:** the track's fourth verb is *act*, so one action earns that beat — but a voice command
+      that mutates money is a misrecognition landmine live. `request_recapture` is harmless, reversible,
+      and the best story: voice → agent → the edge fleet re-reads, closing the sense→act loop (§2's
+      feedback arrow).
+
+- [x] **Bilingual — English the reliable default, Vietnamese the wow — pending a VN check.**
+      **Why:** a Vietnamese-speaking meter copilot is a strong local wow, but the Agora guide only
+      confirmed CN/EN/JP, so we don't bet the demo on unverified VN. Day-1 spike: check My Bot's voices
+      for Vietnamese. Escape hatch: even on an EN/multilingual voice the *content* is VN, because Claude
+      writes the Vietnamese inside the tools (§3, Option A).
+
+- [x] **The demo script is the spec.**
+      **Why:** "which capabilities" is fuzzy; a concrete script is the real acceptance criteria — it
+      tells Dev A what data to seed, Dev B which tools to expose, and it's what we rehearse.
+
+**Demo script — the north star (doubles as acceptance criteria):**
+
+| # | Judge says | Tool(s) | Priority |
+|---|---|---|---|
+| 1 | "How much did kiosk 3 use this month?" | `query_readings` | **P0** |
+| 2 | "**Why** is kiosk 3 so high?" → "spiked 4× on the 14th — looks like a leak" | `explain_anomaly` (Claude inside) | **P0 — money shot** |
+| 3 | "Who hasn't paid?" | `list_unpaid` | **P0** |
+| 4 | "What's room 2's bill?" | `compute_invoice` | **P0** |
+| 5 | "Ask kiosk 3 to re-read" | `request_recapture` | P1 — the "act" |
+
+Beat #2 is highest value **and** highest risk → **seed the demo dataset** (a leak on kiosk 3, a few
+unpaid tenants) so all five answers land.
+
+**Demo de-risk:** the voice demo needs only **Core + good data**, not the full live MQTT hub — a
+"**seed the DB**" fast path (sim populates it, or seed directly) keeps both devs unblocked; the hub
+stays in the narrative.
