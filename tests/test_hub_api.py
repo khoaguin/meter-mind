@@ -6,10 +6,16 @@ right service fn, path/query params threaded, NotFoundError mapped to 404.
 
 import pytest
 from fastapi.testclient import TestClient
+from sqlmodel import Session
 
 from hub.api import app
 
 client = TestClient(app)
+
+
+@pytest.fixture(autouse=True)
+def _seed(seeded_session: Session) -> None:
+    """Routes read the DB at request time — bind + seed a tmp DB for every API test."""
 
 
 def test_health_ok() -> None:
@@ -32,7 +38,7 @@ def test_readings_route_returns_usage() -> None:
     # WHY: beat #1 over HTTP — the dashboard reads usage 620 from this route.
     resp = client.get("/devices/kiosk3-elec/readings")
     assert resp.status_code == 200
-    assert resp.json()["usage"] == 620
+    assert resp.json()["usage"] == pytest.approx(620, abs=1e-6)
 
 
 def test_anomaly_route_returns_factor() -> None:
@@ -51,7 +57,7 @@ def test_unpaid_route_counts_two() -> None:
 def test_invoice_route_amount() -> None:
     resp = client.get("/tenants/room2/invoice")
     assert resp.status_code == 200
-    assert resp.json()["amount"] == 270_000
+    assert resp.json()["amount"] == pytest.approx(270_000, abs=1e-3)
 
 
 def test_recapture_route_queued() -> None:

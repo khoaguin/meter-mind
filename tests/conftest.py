@@ -5,6 +5,7 @@ import pytest
 from sqlalchemy import Engine
 from sqlmodel import Session, create_engine
 
+from hub.core import narrate
 from hub.db.seed_loader import load_seed
 from hub.db.session import init_db
 
@@ -28,9 +29,17 @@ def digits_dir() -> Path:
 
 
 @pytest.fixture
-def db_engine(tmp_path: Path) -> Engine:
-    """A throwaway SQLite engine at tmp_path — seeding never touches the real data/hub.db."""
+def db_engine(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> Engine:
+    """A tmp SQLite engine bound to the module factory so DB-backed service fns read it.
+
+    Phase 2's `service` fns open `Session(hub.db.session.engine)` internally; patching
+    that module attribute redirects them to this tmp DB — the real data/hub.db is never
+    touched, and the patch auto-reverts after the test.
+    """
+    from hub.db import session as db_session
+
     engine = create_engine(f"sqlite:///{tmp_path}/hub.db")
+    monkeypatch.setattr(db_session, "engine", engine)
     init_db(engine)
     return engine
 
@@ -41,3 +50,17 @@ def seeded_session(db_engine: Engine) -> Iterator[Session]:
     with Session(db_engine) as session:
         load_seed(session)
         yield session
+
+
+@pytest.fixture(autouse=True)
+def _mock_narration(monkeypatch: pytest.MonkeyPatch) -> None:
+    """Keep unit tests offline + deterministic — no live Claude call (the one live call
+    is exercised manually at rehearsal). Tests that assert the fallback path re-patch this."""
+    monkeypatch.setattr(
+        narrate,
+        "explain_anomaly_vi",
+        lambda device_id,
+        kind,
+        detected_at,
+        factor: f"[stub] {kind} {factor}× {detected_at}",
+    )

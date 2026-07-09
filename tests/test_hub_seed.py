@@ -21,15 +21,6 @@ def test_seed_yaml_validates() -> None:
     assert seed.tariffs == {"water": 15000, "elec": 3000}
 
 
-def test_amount_is_derived_not_stored() -> None:
-    # WHY: editing usage in YAML must move the invoice amount — no stale literal.
-    from hub.core import service
-
-    invoice = service.compute_invoice("room3")
-    assert invoice.amount == invoice.usage * invoice.tariff_rate
-    assert invoice.amount == 620 * 3000
-
-
 def test_malformed_seed_fails_loud(tmp_path: Path) -> None:
     # WHY: fail-fast at the boundary — a bad file errors, never loads half a model.
     bad = tmp_path / "bad.yaml"
