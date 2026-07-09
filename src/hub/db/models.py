@@ -37,7 +37,7 @@ class Reading(SQLModel, table=True):  # TIME-SERIES
     id: int | None = Field(default=None, primary_key=True)
     device_id: str = Field(foreign_key="device.device_id", index=True)
     timestamp: str  # jomjol local "%Y-%m-%dT%H:%M:%S"
-    value: float  # cumulative meter face
+    value: float  # CUMULATIVE meter face (contract ReadingPoint.value is a per-day delta — diff to convert)
     received_at: datetime  # hub receipt time (never trust embedded local ts as UTC)
 
 

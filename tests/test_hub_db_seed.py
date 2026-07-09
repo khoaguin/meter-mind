@@ -51,6 +51,17 @@ def test_seed_is_idempotent(seeded_session: Session) -> None:
     assert before["Reading"] == 3 * 31  # 3 devices × 31 days in 2026-07
 
 
+def test_api_series_matches_db_daily_deltas(seeded_session: Session) -> None:
+    # WHY: service.query_readings (API/MCP) and the DB Readings share ONE synth
+    # source (synth_daily_deltas); if that drifts, the dashboard chart total and
+    # the DB series silently diverge. This locks them to the same per-day shape.
+    from hub.core import service
+
+    api = [point.value for point in service.query_readings("kiosk3-elec").series]
+    db = [value for _, value in _daily_deltas(seeded_session, "kiosk3-elec")]
+    assert api == pytest.approx(db, abs=1e-6)
+
+
 def test_kiosk3_series_sums_to_usage(seeded_session: Session) -> None:
     # WHY: beat #1 total must match the chart; float rounding of 30·b + 4·b won't land on 620.0.
     deltas = [value for _, value in _daily_deltas(seeded_session, "kiosk3-elec")]

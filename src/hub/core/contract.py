@@ -16,7 +16,7 @@ Unit = Literal["m3", "kWh"]
 
 class ReadingPoint(BaseModel):
     timestamp: str  # ISO local, jomjol style "%Y-%m-%dT%H:%M:%S"
-    value: float
+    value: float  # that day's CONSUMPTION (delta), NOT the cumulative meter face
 
 
 class ReadingsSummary(BaseModel):
@@ -24,9 +24,11 @@ class ReadingsSummary(BaseModel):
     meter_type: MeterType
     unit: Unit
     period: str  # "2026-07"
-    usage: float  # consumption over the period
-    latest_value: float
+    usage: float  # consumption over the period == Σ(series.value)
+    latest_value: float  # cumulative meter face at period end (START 0 + usage)
     latest_timestamp: str
+    # daily consumption deltas; Σ(series.value) == usage. DB Reading.value is
+    # CUMULATIVE — Phase 2 must diff consecutive faces back to deltas here.
     series: list[ReadingPoint]
 
 

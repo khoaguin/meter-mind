@@ -106,24 +106,38 @@ def _amount(account: SeedAccount) -> float:
     return account.usage * SEED.tariffs[account.meter_type]
 
 
-def _synth_series(account: SeedAccount, period: str) -> list[ReadingPoint]:
-    """Per-day consumption points: flat baseline, one `factor`× spike on the anomaly day.
+def synth_daily_deltas(
+    account: SeedAccount, anomaly: SeedAnomaly, period: str
+) -> list[tuple[str, float]]:
+    """The ONE source of the demo's per-day consumption shape.
 
-    baseline b solves (N - 1 + factor) * b == usage so the series reconciles to
-    the seed usage total; non-anomaly devices are flat (b = usage / N).
+    Returns (timestamp, consumption) per day of `period`: a flat baseline b with
+    one `factor`× spike on the anomaly day for the anomaly device. b solves
+    (N - 1 + factor) * b == usage so the daily deltas reconcile to account.usage;
+    non-anomaly devices are flat (b = usage / N). `query_readings` returns these
+    deltas verbatim as `ReadingPoint`s; the DB loader cumsums them into meter
+    faces — same shape, two representations, one formula here so they can't drift.
     """
     n = days_in_period(period)
-    is_anomaly = SEED.anomaly.device_id == account.device_id
-    factor = SEED.anomaly.factor if is_anomaly else None
-    spike_day = int(SEED.anomaly.detected_at.split("-")[2]) if is_anomaly else None
+    is_anomaly = anomaly.device_id == account.device_id
+    factor = anomaly.factor if is_anomaly else None
+    spike_day = int(anomaly.detected_at.split("-")[2]) if is_anomaly else None
     baseline = account.usage / ((n - 1 + factor) if factor else n)
-    points: list[ReadingPoint] = []
-    for day in range(1, n + 1):
-        value = baseline * factor if (factor and day == spike_day) else baseline
-        points.append(
-            ReadingPoint(timestamp=f"{period}-{day:02d}T00:00:00", value=value)
+    return [
+        (
+            f"{period}-{day:02d}T00:00:00",
+            baseline * factor if (factor and day == spike_day) else baseline,
         )
-    return points
+        for day in range(1, n + 1)
+    ]
+
+
+def _synth_series(account: SeedAccount, period: str) -> list[ReadingPoint]:
+    """Per-day consumption points (deltas, NOT cumulative face) — the frozen series shape."""
+    return [
+        ReadingPoint(timestamp=timestamp, value=consumption)
+        for timestamp, consumption in synth_daily_deltas(account, SEED.anomaly, period)
+    ]
 
 
 # --- The 5 frozen tools ---------------------------------------------------------
@@ -138,8 +152,8 @@ def query_readings(device_id: str, period: str = "2026-07") -> ReadingsSummary:
         meter_type=account.meter_type,
         unit=account.unit,
         period=period,
-        usage=account.usage,  # seed fact, not the float-summed series
-        latest_value=account.usage,  # cumulative face from START 0 == total (stub)
+        usage=account.usage,  # seed fact == Σ(series deltas)
+        latest_value=account.usage,  # cumulative meter face at period end (START 0 + usage); series holds deltas, not this
         latest_timestamp=series[-1].timestamp,
         series=series,
     )

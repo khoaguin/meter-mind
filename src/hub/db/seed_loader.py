@@ -18,8 +18,8 @@ from hub.core.service import (
     SeedAccount,
     SeedAnomaly,
     SeedData,
-    days_in_period,
     load_seed_data,
+    synth_daily_deltas,
 )
 from hub.db.models import Device, Invoice, Reading, Tariff, Tenant
 from hub.db.session import engine, init_db
@@ -33,32 +33,27 @@ SYNTH_RECEIVED_AT: datetime = datetime(
 def _synth_series(
     account: SeedAccount, anomaly: SeedAnomaly, period: str
 ) -> list[Reading]:
-    """Cumulative daily meter face from START_VALUE; inject a `factor`× day on
-    anomaly.detected_at for the anomaly device so sum(daily deltas) == account.usage."""
-    n = days_in_period(period)
-    is_anomaly = anomaly.device_id == account.device_id
-    factor = anomaly.factor if is_anomaly else None
-    spike_day = int(anomaly.detected_at.split("-")[2]) if is_anomaly else None
-    denom = (n - 1 + factor) if factor else float(n)
-    assert denom != 0, f"degenerate period {period!r}: N-1+factor == 0"
-    baseline = account.usage / denom
+    """Cumsum the shared daily deltas into cumulative meter faces from START_VALUE.
+
+    Same per-day shape as `service.query_readings` (single source:
+    `synth_daily_deltas`); here we integrate the deltas so `Reading.value` is the
+    cumulative face and sum(daily deltas) == account.usage."""
     rows: list[Reading] = []
     face = START_VALUE
-    for day in range(1, n + 1):
-        delta = baseline * factor if (factor and day == spike_day) else baseline
+    for timestamp, delta in synth_daily_deltas(account, anomaly, period):
         face += delta
         rows.append(
             Reading(
                 device_id=account.device_id,
-                timestamp=f"{period}-{day:02d}T00:00:00",
+                timestamp=timestamp,
                 value=face,
                 received_at=SYNTH_RECEIVED_AT,
             )
         )
-    if is_anomaly:
+    if anomaly.device_id == account.device_id:
         logger.info(
             "synth: injected {factor}× spike on {detected_at} for {device_id}",
-            factor=factor,
+            factor=anomaly.factor,
             detected_at=anomaly.detected_at,
             device_id=account.device_id,
         )
