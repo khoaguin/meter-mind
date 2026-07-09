@@ -38,9 +38,7 @@ The chip is **stateless**: snap → read → publish. It keeps only `pre` (last 
 
 - The **Dashboard** reads it over REST.
 - The **Agent** calls it as tools; `explain_anomaly` / `draft_reminder` call Claude *inside* the tool to turn numbers into plain-language Vietnamese.
-- The **Voice Box** reaches the same tools through an **MCP server** (thin wrapper over Core).
-
-Freeze the Core API (tool names + JSON in/out) on Day 1. Both engineers build against it. Same discipline that produced [`hub-contract-requirements.md`](../.dk/planning/hub-contract-requirements.md) for the MQTT seam.
+- The **Voice Box** reaches the same tools through an **MCP server** (thin wrapper over Core). Agora natively supports MCP (Feb 2026): we can set **one URL** in the cloud agent config (`llm.mcp_servers`, `transport_type: "http"` = Streamable HTTP) — nothing is flashed to the device, no custom glue.
 
 ---
 
@@ -56,26 +54,10 @@ The 5 demo answers need **Core + good data, not the live pipe**. So the P0 spine
 
 Focus: **A (spine) + Voice/Agora** — Agora is the sponsor, chips in hand. The seam splits the work cleanly; after the Day-1 freeze there is **zero shared state**.
 
-| | **Track A — Software spine** (Khoa) | **Track B — Physical / voice edge** (friend) |
+| | **Track A — Software spine** | **Track B — Physical / voice edge**|
 |---|---|---|
 | Owns | DB + seed · Core · Agent · REST · Dashboard · **MCP server** | Agora ESP32-S3 flash · My Bot persona · VN-voice check · point My Bot at the MCP endpoint · tune conversation |
 | Deliverable to the other | a running **MCP endpoint + tool docs** | — (consumes the endpoint) |
 | Stretch | live MQTT ingest (edgesim→DB) | real jomjol meter chip |
 
-Khoa owns everything **down to and including the MCP server**. Friend never touches Python Core — just points Agora at the endpoint URL. Minimal integration surface.
-
-### Day plan
-
-- **Day 1 (both):**
-  1. Freeze the **Core API contract** (tool names, args, JSON I/O).
-  2. Freeze **seed data** (tenants, tariffs, the leak on kiosk3, a few unpaid tenants) — the demo-script rows drive it.
-  3. Khoa ships a **stub MCP endpoint** (fake data) so friend can wire + test immediately.
-  4. Friend spikes **the one real risk**: does My Bot accept our MCP server? Is there a VN voice? (Confirm with Agora mentors / Discord.)
-- **Day 2:** Khoa — real DB + Core + agent answering all 5 beats over chat/dashboard (**P0 done, demo-safe**). Friend — voice box speaks a real answer through the live MCP endpoint (**P0 wow**).
-- **Day 3:** integrate, rehearse the demo script, add P1 (`request_recapture` = the "act"), then live MQTT ingest / real chip if time.
-
-### Priorities (demo-risk order)
-
-- **P0 must-land:** Core + seed + agent answering the 5 script beats via chat/dashboard. Lands even if voice/network die on stage.
-- **P0 wow:** the voice box speaks an answer (Track B + the MCP seam).
-- **P1:** `request_recapture` (voice → agent → fleet re-reads: the sense→act loop), live MQTT ingest, real meter chip.
+Track B do not need to touch Python Core — just points Agora at the endpoint URL. Minimal integration surface.
