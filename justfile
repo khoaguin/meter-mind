@@ -19,9 +19,14 @@ init:
 fetch-assets:
     uv run python scripts/fetch_assets.py
 
-# Run tests
+# Run tests (serial). Use for the integration suite: `just test -m integration`.
 test *args:
     uv run pytest {{args}}
+
+# Default suite in parallel (pytest-xdist) — faster on CI. Integration stays
+# excluded by addopts; run it serially via `just test -m integration`.
+test-fast *args:
+    uv run pytest -n auto {{args}}
 
 # Lint (ruff) — `just lint --fix` to auto-fix
 lint *args:
@@ -36,7 +41,23 @@ types:
     uv run pyrefly check
 
 # Everything CI runs
-check: lint types test
+check: lint types test-fast
+
+# Seed the hub SQLite DB from core/seed.yaml (init_db + load_seed)
+hub-seed:
+    PYTHONPATH=src uv run python -m hub.db.seed_loader
+
+# Teardown + re-seed the hub DB
+hub-db-reset:
+    rm -f data/hub.db && just hub-seed
+
+# Serve the hub REST API (spine dashboard)
+hub-api:
+    PYTHONPATH=src uv run uvicorn hub.api:app --reload --port 8000
+
+# Serve the hub MCP endpoint (voice track / Agora) over streamable-http on /mcp
+hub-mcp:
+    PYTHONPATH=src uv run python -m hub.mcp_server
 
 # Start local MQTT broker (mosquitto)
 broker-up:

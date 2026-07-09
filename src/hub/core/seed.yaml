@@ -1,0 +1,13 @@
+currency: VND
+period: "2026-07"
+tariffs: { water: 15000, elec: 3000 }   # VND per m³ / kWh
+accounts:
+  - { tenant_id: room1, room: "Room 1", name: "Nguyễn Văn An",  device_id: kiosk1-water, meter_type: water, unit: m3,  usage: 12,  paid: true }
+  - { tenant_id: room2, room: "Room 2", name: "Trần Thị Bình", device_id: kiosk2-water, meter_type: water, unit: m3,  usage: 18,  paid: false }
+  - { tenant_id: room3, room: "Room 3", name: "Lê Văn Cường",  device_id: kiosk3-elec,  meter_type: elec,  unit: kWh, usage: 620, paid: false }
+anomaly:
+  device_id: kiosk3-elec
+  kind: spike
+  detected_at: "2026-07-14"
+  factor: 4.0
+  explanation: "Kiosk 3 tiêu thụ tăng ~4× vào 14/07 so với mức thường — nghi rò rỉ/thiết bị lỗi."
