@@ -5,7 +5,8 @@ name: CI
 #              (tests/test_contract.py needs no downloaded assets). Safe to
 #              require as a status check before merge.
 #   unit     — seconds; fetches the tflite model + digit crops (cached),
-#              then `just test`. Reader tests skip if the fetch is flaky,
+#              then `just test-fast` (default suite in parallel via
+#              pytest-xdist). Reader tests skip if the fetch is flaky,
 #              so this stays green either way. Safe to require.
 #   e2e      — spins up the docker-compose mosquitto broker (same config as
 #              `just broker-up`) and runs the MQTT integration test over the
@@ -86,8 +87,8 @@ jobs:
       - name: Fetch model + digit crops
         run: just fetch-assets
 
-      - name: Unit tests
-        run: just test
+      - name: Unit tests (parallel via pytest-xdist)
+        run: just test-fast
 
   e2e:
     runs-on: ubuntu-latest
