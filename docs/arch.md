@@ -1,9 +1,9 @@
 # Architecture — Agentic Edge Meter Fleet
 
 - Source: [`idea.md`](./idea.md).
-- Diagrams [`arch.drawio`](./arch.drawio)
+- Diagrams [`arch.drawio`](./diagrams/arch.drawio)
 
-![Architecture](./arch.drawio.png)
+![Architecture](./diagrams/arch.drawio.png)
 
 ---
 
