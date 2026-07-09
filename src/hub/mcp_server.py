@@ -20,7 +20,7 @@ def query_readings(device_id: str, period: str = "2026-07") -> dict:
 
 @mcp.tool()
 def explain_anomaly(device_id: str) -> dict:
-    """Explain why a meter's consumption spiked, in plain Vietnamese."""
+    """Explain why a meter's consumption spiked, in plain English."""
     return service.explain_anomaly(device_id).model_dump()
 
 

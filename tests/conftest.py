@@ -58,9 +58,9 @@ def _mock_narration(monkeypatch: pytest.MonkeyPatch) -> None:
     is exercised manually at rehearsal). Tests that assert the fallback path re-patch this."""
     monkeypatch.setattr(
         narrate,
-        "explain_anomaly_vi",
+        "explain_anomaly_en",
         lambda device_id,
         kind,
         detected_at,
-        factor: f"[stub] {kind} {factor}× {detected_at}",
+        factor: f"[stub] {kind} {factor}x {detected_at}",
     )

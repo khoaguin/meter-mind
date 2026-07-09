@@ -4,8 +4,8 @@ The signatures are FROZEN (byte-identical to the Phase-0 stub): no `session`
 param, no new kwargs. Each fn opens its own `Session` on the module-level engine
 in `hub.db.session` (acquired internally, never injected), reads the Phase-1
 tables, and derives everything in deterministic code — `amount = usage × tariff`,
-the per-day series, the spike detector. Claude is called ONLY inside the smart
-tool (`explain_anomaly` → `narrate`); everything else is arithmetic.
+the per-day series, the spike detector. The LLM is called ONLY inside the smart
+tool (`explain_anomaly` → `narrate`, provider-agnostic); everything else is arithmetic.
 
 `SeedData` / `SEED_PATH` / `load_seed_data` / `days_in_period` stay here as the
 Phase-0 boundary reused by `hub.db.seed_loader` — they no longer feed the tools.
@@ -185,7 +185,7 @@ def query_readings(device_id: str, period: str = "2026-07") -> ReadingsSummary:
 
 
 def explain_anomaly(device_id: str) -> AnomalyExplanation:
-    """Why a meter spiked — deterministic detector, Claude writes the VN prose (beat #2)."""
+    """Why a meter spiked — deterministic detector, the LLM writes the English prose (beat #2)."""
     with Session(db_session.engine) as session:
         device = session.get(Device, device_id)
         if device is None:
@@ -200,15 +200,17 @@ def explain_anomaly(device_id: str) -> AnomalyExplanation:
             kind=None,
             detected_at=None,
             factor=None,
-            explanation="Không phát hiện bất thường.",
+            explanation="No anomaly detected.",
         )
 
     kind, detected_at, factor = spike
     try:
-        explanation = narrate.explain_anomaly_vi(device_id, kind, detected_at, factor)
+        explanation = narrate.explain_anomaly_en(device_id, kind, detected_at, factor)
     except Exception as exc:  # narration must never blank the money shot
-        logger.warning("explain_anomaly: narration failed ({}); using canned VN", exc)
-        explanation = narrate.canned_vi(kind, detected_at, factor)
+        logger.warning(
+            "explain_anomaly: narration failed ({}); using canned English", exc
+        )
+        explanation = narrate.canned_en(kind, detected_at, factor)
     return AnomalyExplanation(
         device_id=device_id,
         has_anomaly=True,
@@ -288,12 +290,12 @@ def request_recapture(device_id: str) -> RecaptureAck:
         return RecaptureAck(
             device_id=device_id,
             status="queued",
-            message=f"Đã xếp hàng chụp lại {device_id}.",
+            message=f"Recapture queued for {device_id}.",
         )
     return RecaptureAck(
         device_id=device_id,
         status="unknown_device",
-        message=f"Không tìm thấy thiết bị {device_id}.",
+        message=f"Unknown device {device_id}.",
     )
 
 

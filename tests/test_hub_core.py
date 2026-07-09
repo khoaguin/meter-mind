@@ -30,7 +30,7 @@ def test_anomaly_factor_and_date(seeded_session: Session) -> None:
     assert anomaly.has_anomaly is True
     assert anomaly.factor == 4.0
     assert anomaly.detected_at == "2026-07-14"
-    assert anomaly.explanation  # non-empty VN
+    assert anomaly.explanation  # non-empty English
 
 
 def test_clean_device_has_no_anomaly(seeded_session: Session) -> None:
@@ -72,15 +72,15 @@ def test_unknown_ids_raise_not_found(seeded_session: Session) -> None:
 def test_anomaly_falls_back_when_claude_down(
     seeded_session: Session, monkeypatch: pytest.MonkeyPatch
 ) -> None:
-    # WHY: an on-stage network failure must not blank beat #2 — canned VN, still valid.
+    # WHY: an on-stage network failure must not blank beat #2 — canned English, still valid.
     def boom(*args: object, **kwargs: object) -> str:
         raise RuntimeError("claude unreachable")
 
-    monkeypatch.setattr(narrate, "explain_anomaly_vi", boom)
+    monkeypatch.setattr(narrate, "explain_anomaly_en", boom)
     anomaly = service.explain_anomaly("kiosk3-elec")
     assert anomaly.has_anomaly is True
     assert anomaly.factor == 4.0
-    assert anomaly.explanation  # canned VN
+    assert anomaly.explanation  # canned English
     assert "4" in anomaly.explanation  # the canned string names the factor
 
 
