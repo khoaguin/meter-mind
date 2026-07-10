@@ -4,8 +4,8 @@ The signatures are FROZEN (byte-identical to the Phase-0 stub): no `session`
 param, no new kwargs. Each fn opens its own `Session` on the module-level engine
 in `hub.db.session` (acquired internally, never injected), reads the Phase-1
 tables, and derives everything in deterministic code — `amount = usage × tariff`,
-the per-day series, the spike detector. The LLM is called ONLY inside the smart
-tool (`explain_anomaly` → `narrate`, provider-agnostic); everything else is arithmetic.
+the per-day series, the spike detector, and the anomaly explanation. No model runs
+in the hub: Agora's My Bot does the routing/phrasing; every tool here is arithmetic.
 
 `SeedData` / `SEED_PATH` / `load_seed_data` / `days_in_period` stay here as the
 Phase-0 boundary reused by `hub.db.seed_loader` — they no longer feed the tools.
@@ -17,11 +17,9 @@ from collections.abc import Sequence
 from pathlib import Path
 
 import yaml
-from loguru import logger
 from pydantic import BaseModel
 from sqlmodel import Session, col, select
 
-from hub.core import narrate
 from hub.core.contract import (
     AnomalyExplanation,
     Invoice,
@@ -184,8 +182,16 @@ def query_readings(device_id: str, period: str = "2026-07") -> ReadingsSummary:
         )
 
 
+def _anomaly_prose(kind: str, detected_at: str, factor: float) -> str:
+    """Deterministic English for beat #2 — code owns the number, no model in the loop."""
+    return (
+        f"Detected {kind}: usage rose about {factor:g} times on {detected_at} compared with "
+        "normal days — likely a leak or a faulty meter."
+    )
+
+
 def explain_anomaly(device_id: str) -> AnomalyExplanation:
-    """Why a meter spiked — deterministic detector, the LLM writes the English prose (beat #2)."""
+    """Why a meter spiked — deterministic detector + deterministic English prose (beat #2)."""
     with Session(db_session.engine) as session:
         device = session.get(Device, device_id)
         if device is None:
@@ -204,13 +210,7 @@ def explain_anomaly(device_id: str) -> AnomalyExplanation:
         )
 
     kind, detected_at, factor = spike
-    try:
-        explanation = narrate.explain_anomaly_en(device_id, kind, detected_at, factor)
-    except Exception as exc:  # narration must never blank the money shot
-        logger.warning(
-            "explain_anomaly: narration failed ({}); using canned English", exc
-        )
-        explanation = narrate.canned_en(kind, detected_at, factor)
+    explanation = _anomaly_prose(kind, detected_at, factor)
     return AnomalyExplanation(
         device_id=device_id,
         has_anomaly=True,

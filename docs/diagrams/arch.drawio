@@ -16,7 +16,7 @@
 
         <!-- ===== Legend ===== -->
         <mxCell id="14" value="Legend" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#0b141f;strokeColor=#8b98ab;verticalAlign=top;align=center;fontStyle=1;fontColor=#dbe4f0;fontFamily=Courier New;fontSize=12;" vertex="1" parent="1">
-          <mxGeometry x="520" y="20" width="230" height="180" as="geometry" />
+          <mxGeometry x="520" y="20" width="230" height="155" as="geometry" />
         </mxCell>
         <mxCell id="40" value="" style="rounded=0;html=1;fillColor=#1a2233;strokeColor=#8b98ab;" vertex="1" parent="14"><mxGeometry x="12" y="30" width="28" height="14" as="geometry" /></mxCell>
         <mxCell id="41" value="Physical fleet (mocked)" style="text;html=1;align=left;verticalAlign=middle;fontColor=#dbe4f0;fontFamily=Courier New;fontSize=11;" vertex="1" parent="14"><mxGeometry x="48" y="27" width="175" height="20" as="geometry" /></mxCell>
@@ -26,10 +26,8 @@
         <mxCell id="45" value="Our code (Core / API)" style="text;html=1;align=left;verticalAlign=middle;fontColor=#dbe4f0;fontFamily=Courier New;fontSize=11;" vertex="1" parent="14"><mxGeometry x="48" y="75" width="175" height="20" as="geometry" /></mxCell>
         <mxCell id="46" value="" style="rounded=0;html=1;fillColor=#221a33;strokeColor=#a78bfa;" vertex="1" parent="14"><mxGeometry x="12" y="102" width="28" height="14" as="geometry" /></mxCell>
         <mxCell id="47" value="SQLite DB" style="text;html=1;align=left;verticalAlign=middle;fontColor=#dbe4f0;fontFamily=Courier New;fontSize=11;" vertex="1" parent="14"><mxGeometry x="48" y="99" width="175" height="20" as="geometry" /></mxCell>
-        <mxCell id="48" value="" style="rounded=0;html=1;fillColor=#0a2b1e;strokeColor=#34d399;" vertex="1" parent="14"><mxGeometry x="12" y="126" width="28" height="14" as="geometry" /></mxCell>
-        <mxCell id="49" value="Agent (Claude)" style="text;html=1;align=left;verticalAlign=middle;fontColor=#dbe4f0;fontFamily=Courier New;fontSize=11;" vertex="1" parent="14"><mxGeometry x="48" y="123" width="175" height="20" as="geometry" /></mxCell>
-        <mxCell id="50" value="" style="rounded=0;html=1;fillColor=#33240a;strokeColor=#e8b339;" vertex="1" parent="14"><mxGeometry x="12" y="150" width="28" height="14" as="geometry" /></mxCell>
-        <mxCell id="51" value="Voice (Agora)" style="text;html=1;align=left;verticalAlign=middle;fontColor=#dbe4f0;fontFamily=Courier New;fontSize=11;" vertex="1" parent="14"><mxGeometry x="48" y="147" width="175" height="20" as="geometry" /></mxCell>
+        <mxCell id="50" value="" style="rounded=0;html=1;fillColor=#33240a;strokeColor=#e8b339;" vertex="1" parent="14"><mxGeometry x="12" y="126" width="28" height="14" as="geometry" /></mxCell>
+        <mxCell id="51" value="Voice + brain (Agora)" style="text;html=1;align=left;verticalAlign=middle;fontColor=#dbe4f0;fontFamily=Courier New;fontSize=11;" vertex="1" parent="14"><mxGeometry x="48" y="123" width="175" height="20" as="geometry" /></mxCell>
 
         <!-- ===== Hub container (our backend) ===== -->
         <mxCell id="2" value="&#128760; Hub &#8212; FastAPI backend  (OUR BUILD)" style="swimlane;startSize=34;html=1;whiteSpace=wrap;rounded=1;fillColor=#0b1c24;strokeColor=#2dd4bf;fontColor=#7fe9dd;fontFamily=Courier New;fontSize=14;fontStyle=1;verticalAlign=top;" vertex="1" parent="1">
@@ -44,7 +42,7 @@
         <mxCell id="5" value="&#128451;&#65039; SQLite (one file)&#xa;readings &#183; tenants&#xa;tariffs &#183; payments&#xa;devices" style="shape=cylinder3;whiteSpace=wrap;html=1;fillColor=#221a33;strokeColor=#a78bfa;fontColor=#e5dcf5;fontFamily=Courier New;fontSize=12;verticalAlign=middle;" vertex="1" parent="2">
           <mxGeometry x="760" y="320" width="280" height="140" as="geometry" />
         </mxCell>
-        <mxCell id="6" value="&#129302; Agent &#8212; Claude + tools&#xa;explain_anomaly &#183; draft_reminder&#xa;request_recapture" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#0a2b1e;strokeColor=#34d399;fontColor=#d6f5e4;fontFamily=Courier New;fontSize=12;verticalAlign=middle;" vertex="1" parent="2">
+        <mxCell id="6" value="&#128256; MCP Server &#8212; thin wrapper over Core&#xa;exposes 5 deterministic tools to Agora (no model here)&#xa;query_readings &#183; explain_anomaly &#183; list_unpaid&#xa;compute_invoice &#183; request_recapture" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#0c2530;strokeColor=#2dd4bf;fontColor=#dbe4f0;fontFamily=Courier New;fontSize=12;verticalAlign=middle;" vertex="1" parent="2">
           <mxGeometry x="620" y="60" width="400" height="90" as="geometry" />
         </mxCell>
 

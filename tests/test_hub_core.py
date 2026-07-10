@@ -1,8 +1,8 @@
 """Real Core (DB-backed) — each test names the demo beat / invariant it defends.
 
 Uses the seeded tmp-DB fixture (bound to the module engine in conftest), so these
-call the exact production `service` fns the REST/MCP adapters call. The Claude
-narration is mocked to a stub by conftest's autouse `_mock_narration`.
+call the exact production `service` fns the REST/MCP adapters call. Everything is
+deterministic code — no model runs, so nothing is mocked.
 """
 
 import inspect
@@ -11,7 +11,7 @@ from collections.abc import Callable
 import pytest
 from sqlmodel import Session
 
-from hub.core import contract, narrate, service
+from hub.core import contract, service
 
 
 def test_query_readings_usage(seeded_session: Session) -> None:
@@ -69,19 +69,14 @@ def test_unknown_ids_raise_not_found(seeded_session: Session) -> None:
         service.compute_invoice("room99")
 
 
-def test_anomaly_falls_back_when_claude_down(
-    seeded_session: Session, monkeypatch: pytest.MonkeyPatch
-) -> None:
-    # WHY: an on-stage network failure must not blank beat #2 — canned English, still valid.
-    def boom(*args: object, **kwargs: object) -> str:
-        raise RuntimeError("claude unreachable")
-
-    monkeypatch.setattr(narrate, "explain_anomaly_en", boom)
+def test_anomaly_is_deterministic_english(seeded_session: Session) -> None:
+    # WHY: beat #2 needs zero network — the 4× is computed by code (_detect_spike), and the
+    # English names that same factor, so nothing can drift between the number and the prose.
     anomaly = service.explain_anomaly("kiosk3-elec")
     assert anomaly.has_anomaly is True
     assert anomaly.factor == 4.0
-    assert anomaly.explanation  # canned English
-    assert "4" in anomaly.explanation  # the canned string names the factor
+    assert anomaly.explanation  # deterministic English
+    assert "4" in anomaly.explanation  # the prose names the code-computed factor
 
 
 def _params(fn: Callable[..., object]) -> list[tuple[str, object]]:

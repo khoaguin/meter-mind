@@ -2,6 +2,8 @@
 
 > Brainstorm capture for **Agentic AI Build Week (AABW)** — HCMC, July 8–12, 2026.
 > Track: **Robotics & Physical AI**. Status: brainstorm in progress, architecture not yet formally signed off.
+>
+> **Update — final architecture (signed off):** we ship **Agora-only, zero Claude in the hub**. Every tool, including `explain_anomaly`, is deterministic code; Agora's My Bot does all the routing and phrasing over MCP. See [`arch.md`](./arch.md). The sections below are the original brainstorm that led there — kept as history (§3's A/B "where does the brain live?" analysis is how we arrived at Option A).
 
 ---
 
@@ -71,7 +73,7 @@ flowchart BT
     HUB --> CORE
 
     %% ---------- Layer 4: agentic copilot ----------
-    AGENT["🤖 Agentic Copilot — Claude + tools\nquery_readings · compute_invoice · list_unpaid\ndraft_reminder · mark_paid · get_low_confidence · request_recapture"]
+    AGENT["🤖 Agentic Copilot — Agora My Bot (ASR·LLM·TTS)\nroutes deterministic Core tools over MCP\nquery_readings · explain_anomaly · list_unpaid · compute_invoice · request_recapture"]
     CORE --> AGENT
 
     %% ---------- Layer 5: owner-facing channels (top) ----------
@@ -187,7 +189,7 @@ Four calls that set the scope. Each is chosen to **cut live-demo risk** and play
 | # | Judge says | Tool(s) | Priority |
 |---|---|---|---|
 | 1 | "How much did kiosk 3 use this month?" | `query_readings` | **P0** |
-| 2 | "**Why** is kiosk 3 so high?" → "spiked 4× on the 14th — looks like a leak" | `explain_anomaly` (Claude inside) | **P0 — money shot** |
+| 2 | "**Why** is kiosk 3 so high?" → "spiked 4× on the 14th — looks like a leak" | `explain_anomaly` (deterministic — code computes the 4×) | **P0 — money shot** |
 | 3 | "Who hasn't paid?" | `list_unpaid` | **P0** |
 | 4 | "What's room 2's bill?" | `compute_invoice` | **P0** |
 | 5 | "Ask kiosk 3 to re-read" | `request_recapture` | P1 — the "act" |

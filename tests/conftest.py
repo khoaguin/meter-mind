@@ -5,7 +5,6 @@ import pytest
 from sqlalchemy import Engine
 from sqlmodel import Session, create_engine
 
-from hub.core import narrate
 from hub.db.seed_loader import load_seed
 from hub.db.session import init_db
 
@@ -50,17 +49,3 @@ def seeded_session(db_engine: Engine) -> Iterator[Session]:
     with Session(db_engine) as session:
         load_seed(session)
         yield session
-
-
-@pytest.fixture(autouse=True)
-def _mock_narration(monkeypatch: pytest.MonkeyPatch) -> None:
-    """Keep unit tests offline + deterministic — no live Claude call (the one live call
-    is exercised manually at rehearsal). Tests that assert the fallback path re-patch this."""
-    monkeypatch.setattr(
-        narrate,
-        "explain_anomaly_en",
-        lambda device_id,
-        kind,
-        detected_at,
-        factor: f"[stub] {kind} {factor}x {detected_at}",
-    )
