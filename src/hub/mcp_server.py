@@ -5,11 +5,14 @@ one-line description mirroring its demo beat. Served over streamable-HTTP on
 `/mcp` (public tunnel required — Agora can't reach localhost). Run: `just hub-mcp`.
 """
 
+import os
+
 from mcp.server.fastmcp import FastMCP
 
 from hub.core import service
 
-mcp = FastMCP("meter-mind-hub", host="0.0.0.0", port=8000)
+# Cloud Run injects PORT (default 8080); locally we fall back to 8000.
+mcp = FastMCP("meter-mind-hub", host="0.0.0.0", port=int(os.environ.get("PORT", "8000")))
 
 
 @mcp.tool()
