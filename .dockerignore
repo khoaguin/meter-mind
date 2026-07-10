@@ -1,0 +1,25 @@
+# Keep the build context small and reproducible — the DB is re-seeded in-image.
+.git
+.github
+.venv
+venv
+data
+tests
+docs
+assets
+scripts
+*.egg-info
+__pycache__
+*.py[cod]
+.pytest_cache
+.ruff_cache
+.pyrefly_cache
+.pyrefly-baseline.json
+.env
+.env.*
+!.env.example
+.DS_Store
+.trees
+.planning
+refs
+docker-compose.yml

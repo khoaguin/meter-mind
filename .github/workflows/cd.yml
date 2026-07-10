@@ -1,0 +1,91 @@
+name: CD
+
+# Builds the hub MCP server image, pushes it to Artifact Registry, and deploys
+# it to Cloud Run. Auth is keyless via Workload Identity Federation (WIF) — no
+# JSON service-account key is ever stored in GitHub. One-time GCP bootstrap
+# lives in scripts/setup-gcp-cicd.sh; it prints the two secrets referenced here.
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'src/**'
+      - 'pyproject.toml'
+      - 'uv.lock'
+      - 'Dockerfile'
+      - '.dockerignore'
+      - '.github/workflows/cd.yml'
+  workflow_dispatch:
+
+# One deploy at a time; never cancel an in-flight rollout.
+concurrency:
+  group: cd-${{ github.ref }}
+  cancel-in-progress: false
+
+env:
+  GCP_PROJECT_ID: ai-playground-458112
+  GCP_REGION: asia-southeast1
+  AR_REPO: meter-mind
+  SERVICE: meter-mind-mcp
+
+jobs:
+  deploy:
+    name: Build & deploy MCP server
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write  # required for WIF / Google OIDC token exchange
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Authenticate to Google Cloud (WIF)
+        id: auth
+        uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: ${{ secrets.GCP_WORKLOAD_IDENTITY_PROVIDER }}
+          service_account: ${{ secrets.GCP_SERVICE_ACCOUNT_EMAIL }}
+
+      - name: Set up Cloud SDK
+        uses: google-github-actions/setup-gcloud@v2
+
+      - name: Configure Docker for Artifact Registry
+        run: gcloud auth configure-docker "${GCP_REGION}-docker.pkg.dev" --quiet
+
+      - name: Resolve image name
+        id: image
+        run: |
+          echo "uri=${GCP_REGION}-docker.pkg.dev/${GCP_PROJECT_ID}/${AR_REPO}/${SERVICE}" >> "$GITHUB_OUTPUT"
+
+      - name: Build image
+        run: |
+          docker build \
+            -t "${{ steps.image.outputs.uri }}:${GITHUB_SHA}" \
+            -t "${{ steps.image.outputs.uri }}:latest" \
+            .
+
+      - name: Push image
+        run: |
+          docker push "${{ steps.image.outputs.uri }}:${GITHUB_SHA}"
+          docker push "${{ steps.image.outputs.uri }}:latest"
+
+      - name: Deploy to Cloud Run
+        run: |
+          gcloud run deploy "${SERVICE}" \
+            --image "${{ steps.image.outputs.uri }}:${GITHUB_SHA}" \
+            --region "${GCP_REGION}" \
+            --platform managed \
+            --allow-unauthenticated \
+            --port 8080 \
+            --cpu 1 \
+            --memory 512Mi \
+            --min-instances 0 \
+            --max-instances 2 \
+            --quiet
+
+      - name: Output service URL
+        run: |
+          URL=$(gcloud run services describe "${SERVICE}" --region "${GCP_REGION}" --format='value(status.url)')
+          echo "MCP endpoint: ${URL}/mcp"
+          echo "### 🚀 Deployed" >> "$GITHUB_STEP_SUMMARY"
+          echo "MCP endpoint: \`${URL}/mcp\`" >> "$GITHUB_STEP_SUMMARY"
