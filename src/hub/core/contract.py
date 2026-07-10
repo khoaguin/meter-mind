@@ -36,7 +36,9 @@ class AnomalyExplanation(BaseModel):
     kind: str | None  # "spike"
     detected_at: str | None  # "2026-07-14"
     factor: float | None  # 4.0
-    explanation: str  # plain-language VN. Stub = canned; real = Claude inside the tool.
+    explanation: (
+        str  # plain-language English. Stub = canned; real = an LLM inside the tool.
+    )
 
 
 class UnpaidTenant(BaseModel):
