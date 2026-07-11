@@ -59,6 +59,12 @@ hub-api:
 hub-mcp:
     PYTHONPATH=src uv run python -m hub.mcp_server
 
+# Open the owner dashboard — the same server as hub-mcp hosts it at / (seeds first if needed)
+dashboard:
+    @test -f data/hub.db || just hub-seed
+    @echo "Dashboard → http://localhost:8000/   (MCP for Agora → /mcp)"
+    PYTHONPATH=src uv run python -m hub.mcp_server
+
 # Start local MQTT broker (mosquitto)
 broker-up:
     docker compose up -d mosquitto

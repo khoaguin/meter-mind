@@ -25,6 +25,10 @@ ENV PYTHONPATH="/app/src"
 ENV HUB_DB_PATH="/app/data/hub.db"
 RUN python -m hub.db.seed_loader
 
+# The owner dashboard (page + embedded demo clip) served at `/` on the same
+# service as `/mcp`. Copied late so web-only edits don't rebuild the seed layer.
+COPY web web
+
 # Documentation only — Cloud Run routes to whatever PORT it injects.
 EXPOSE 8080
 CMD ["python", "-m", "hub.mcp_server"]

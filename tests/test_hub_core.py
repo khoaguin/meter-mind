@@ -108,3 +108,26 @@ def test_contract_models_unchanged() -> None:
         ("period", "2026-07"),
     ]
     assert _params(service.request_recapture) == [("device_id", empty)]
+
+
+def test_dashboard_overview_composes_the_five_beats(seeded_session: Session) -> None:
+    # WHY: the dashboard renders this one payload — if it drifts, every panel lies.
+    # It must carry the same Core numbers the voice bot answers with, not a copy.
+    overview = service.dashboard_overview()
+
+    # beat #4 — invoice amounts are usage × tariff (18×15000, 620×3000)
+    assert overview.invoices["room2"].amount == pytest.approx(270_000, abs=1e-3)
+    assert overview.invoices["room3"].amount == pytest.approx(1_860_000, abs=1e-3)
+
+    # beat #3 — room2 + room3 unpaid, room1 paid (the card badge derives from this)
+    unpaid_ids = {tenant.tenant_id for tenant in overview.unpaid.tenants}
+    assert unpaid_ids == {"room2", "room3"}
+    paid = {card.tenant_id: card.paid for card in overview.devices}
+    assert paid == {"room1": True, "room2": False, "room3": False}
+
+    # beat #2 — kiosk3 flagged, and its series still carries the 4× spike day
+    assert "kiosk3-elec" in overview.anomalies
+    series = overview.readings["kiosk3-elec"].series
+    spike = max(point.value for point in series)
+    baseline = sorted(point.value for point in series)[len(series) // 2]  # median-ish
+    assert spike >= 3 * baseline

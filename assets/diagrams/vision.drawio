@@ -10,27 +10,27 @@
         <mxCell id="ttl" value="MeterMind — from one $10 chip to an agentic meter-ops platform" style="text;html=1;align=center;verticalAlign=middle;fontStyle=1;fontSize=20;fontColor=#e6eefb;fontFamily=Courier New;" vertex="1" parent="1">
           <mxGeometry x="40" y="10" width="960" height="30" as="geometry" />
         </mxCell>
-        <mxCell id="sub" value="data flows UP: physical meters → edge readers → broker → hub → billing core → AI copilot → the owner" style="text;html=1;align=center;verticalAlign=middle;fontSize=13;fontColor=#9fb0c3;fontFamily=Courier New;" vertex="1" parent="1">
+        <mxCell id="sub" value="data flows UP: physical meters → edge readers → broker → hub → Core + MCP → Agora voice box → the owner" style="text;html=1;align=center;verticalAlign=middle;fontSize=13;fontColor=#9fb0c3;fontFamily=Courier New;" vertex="1" parent="1">
           <mxGeometry x="40" y="42" width="960" height="24" as="geometry" />
         </mxCell>
 
         <!-- L5 Owner UI -->
-        <mxCell id="ui" value="&lt;b&gt;🖥️  Owner UI&lt;/b&gt; &amp;nbsp; — &amp;nbsp; chat (VN / EN)  +  fleet dashboard&lt;br&gt;&lt;span style=&quot;font-size:11px&quot;&gt;ask in plain language (&amp;quot;who hasn&#39;t paid?&amp;quot;, &amp;quot;why is kiosk 3 high?&amp;quot;) · devices · latest reads · paid / unpaid&lt;/span&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#33240a;strokeColor=#e8b339;dashed=1;fontColor=#dbe4f0;fontSize=13;verticalAlign=middle;fontFamily=Courier New;" vertex="1" parent="1">
+        <mxCell id="ui" value="&lt;b&gt;🖥️  Owner Dashboard&lt;/b&gt; &amp;nbsp; — &amp;nbsp; read-only fleet view (VN / EN)&lt;br&gt;&lt;span style=&quot;font-size:11px&quot;&gt;devices · latest reads · paid / unpaid — the visual backup while the box talks&lt;/span&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#33240a;strokeColor=#e8b339;dashed=1;fontColor=#dbe4f0;fontSize=13;verticalAlign=middle;fontFamily=Courier New;" vertex="1" parent="1">
           <mxGeometry x="80" y="90" width="880" height="70" as="geometry" />
         </mxCell>
 
         <!-- L4 Agent -->
-        <mxCell id="agent" value="&lt;b&gt;🤖  Agentic Copilot&lt;/b&gt; &amp;nbsp; — &amp;nbsp; Claude + tools&lt;br&gt;&lt;span style=&quot;font-size:11px&quot;&gt;query_readings · compute_invoice · list_unpaid · draft_reminder · mark_paid · get_low_confidence · request_recapture&lt;/span&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#33240a;strokeColor=#e8b339;dashed=1;fontColor=#dbe4f0;fontSize=13;verticalAlign=middle;fontFamily=Courier New;" vertex="1" parent="1">
+        <mxCell id="agent" value="&lt;b&gt;🔊  Voice Copilot&lt;/b&gt; &amp;nbsp; — &amp;nbsp; Agora My Bot (ASR · LLM · TTS) &amp;nbsp; ✅ BUILT&lt;br&gt;&lt;span style=&quot;font-size:11px&quot;&gt;the cloud agent answers over MCP — My Bot&#39;s LLM routes the Core tools · &lt;b&gt;no Claude in the hub&lt;/b&gt;&lt;/span&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#0a2b1e;strokeColor=#34d399;fontColor=#dbe4f0;fontSize=13;verticalAlign=middle;fontFamily=Courier New;" vertex="1" parent="1">
           <mxGeometry x="80" y="220" width="880" height="70" as="geometry" />
         </mxCell>
 
         <!-- L3 Core -->
-        <mxCell id="core" value="&lt;b&gt;⚙️  Deterministic Core&lt;/b&gt; &amp;nbsp; — &amp;nbsp; code, not a model&lt;br&gt;&lt;span style=&quot;font-size:11px&quot;&gt;tariff math · invoicing · payment status · threshold anomaly flags&lt;/span&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#33240a;strokeColor=#e8b339;dashed=1;fontColor=#dbe4f0;fontSize=13;verticalAlign=middle;fontFamily=Courier New;" vertex="1" parent="1">
-          <mxGeometry x="80" y="350" width="880" height="66" as="geometry" />
+        <mxCell id="core" value="&lt;b&gt;⚙️  Deterministic Core &amp;nbsp;+&amp;nbsp; 🔌 MCP Server&lt;/b&gt; &amp;nbsp; ✅ BUILT · deployed to Cloud Run&lt;br&gt;&lt;span style=&quot;font-size:11px&quot;&gt;code, not a model — tariff math · invoicing · anomaly · 5 tools: query_readings · explain_anomaly · list_unpaid · compute_invoice · request_recapture&lt;/span&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#0a2b1e;strokeColor=#34d399;fontColor=#dbe4f0;fontSize=13;verticalAlign=middle;fontFamily=Courier New;" vertex="1" parent="1">
+          <mxGeometry x="80" y="350" width="880" height="84" as="geometry" />
         </mxCell>
 
         <!-- L2 Hub -->
-        <mxCell id="hub" value="&lt;b&gt;🛰️  Hub&lt;/b&gt; &amp;nbsp; — &amp;nbsp; MQTT ingest + database&lt;br&gt;&lt;span style=&quot;font-size:11px&quot;&gt;stores readings · tenants · tariffs · payments&lt;/span&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#33240a;strokeColor=#e8b339;dashed=1;fontColor=#dbe4f0;fontSize=13;verticalAlign=middle;fontFamily=Courier New;" vertex="1" parent="1">
+        <mxCell id="hub" value="&lt;b&gt;🛰️  Hub&lt;/b&gt; &amp;nbsp; — &amp;nbsp; SQLite database + REST API &amp;nbsp; ✅ BUILT&lt;br&gt;&lt;span style=&quot;font-size:11px&quot;&gt;stores readings · tenants · tariffs · payments · devices&lt;/span&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#0a2b1e;strokeColor=#34d399;fontColor=#dbe4f0;fontSize=13;verticalAlign=middle;fontFamily=Courier New;" vertex="1" parent="1">
           <mxGeometry x="80" y="476" width="880" height="66" as="geometry" />
         </mxCell>
 
@@ -68,7 +68,7 @@
         <mxCell id="e_hc" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=0;exitDx=0;exitDy=0;entryX=0.5;entryY=1;entryDx=0;entryDy=0;endArrow=classic;fontFamily=Courier New;fontColor=#dbe4f0;strokeColor=#9fb0c3;" edge="1" parent="1" source="hub" target="core">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
-        <mxCell id="e_ca" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=0;exitDx=0;exitDy=0;entryX=0.5;entryY=1;entryDx=0;entryDy=0;endArrow=classic;fontFamily=Courier New;fontColor=#dbe4f0;strokeColor=#9fb0c3;" edge="1" parent="1" source="core" target="agent">
+        <mxCell id="e_ca" value="5 Core tools over MCP (Streamable HTTP)" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;fontSize=10;labelBackgroundColor=#0a0f1c;exitX=0.5;exitY=0;exitDx=0;exitDy=0;entryX=0.5;entryY=1;entryDx=0;entryDy=0;endArrow=classic;fontFamily=Courier New;fontColor=#dbe4f0;strokeColor=#9fb0c3;" edge="1" parent="1" source="core" target="agent">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
         <mxCell id="e_au" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=0;exitDx=0;exitDy=0;entryX=0.5;entryY=1;entryDx=0;entryDy=0;endArrow=classic;fontFamily=Courier New;fontColor=#dbe4f0;strokeColor=#9fb0c3;" edge="1" parent="1" source="agent" target="ui">

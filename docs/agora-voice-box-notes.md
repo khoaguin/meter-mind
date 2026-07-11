@@ -2,6 +2,8 @@
 
 > Nguồn: tài liệu BTC "Agora AI Bot Setup and Firmware Flashing Guide" (`docs/agora-ai-bot-setup-guide.pdf`) + khảo sát trực tiếp My Bot portal (2026-07-09).
 > Liên quan: Epic [#17](https://github.com/khoaguin/meter-mind/issues/17) · spike #25 (MCP) · spike #26 (VN voice, **closed**).
+>
+> **Cập nhật 2026-07-11:** MCP đã deploy lên **Cloud Run** + gắn vào bot → **cloud agent chạy được** (trả lời các câu demo qua MCP tools). **Dashboard / Demo URL** đã lên cùng service, phục vụ ở `/`. Còn lại: **flash ESP32-S3** (Build Day 12/07).
 
 ## Trạng thái hiện tại
 
@@ -12,8 +14,9 @@
 | Language | English (persona hiểu tiếng Việt nhưng luôn trả lời EN) |
 | Voice | Mabel (default BytePlus). EN thuần: Tim. Multilingual đáng thử: Jess, Vivi, Mindy |
 | System prompt / persona / welcome | ✅ Đã set (MeterMind landlord copilot, câu ngắn cho TTS, đọc số tự nhiên, chỉ trả lời từ MCP tool data) |
-| MCP server | ⬜ Chưa gắn — chờ endpoint từ Khoa |
-| Flash thiết bị | ⬜ Chưa làm |
+| MCP server | ✅ **Đã gắn & chạy** — endpoint `https://meter-mind-mcp-fkoupnt5ua-as.a.run.app/mcp` (deploy qua CD lên Cloud Run). Cloud agent trả lời được các câu demo qua MCP tools (verified trong Preview). |
+| Owner dashboard / **Demo URL** | ✅ **Đã build & deploy** — cùng service Cloud Run, phục vụ ở `/` (root): `https://meter-mind-mcp-fkoupnt5ua-as.a.run.app/`. Link bấm-được cho judge (không login, không mic): fleet · spike kiosk 3 · hóa đơn · video demo. |
+| Flash thiết bị ESP32-S3 | ⬜ Chưa làm — để **Build Day 12/07** |
 
 ## Phát hiện quan trọng
 
@@ -24,7 +27,7 @@
 - **Timeout (ms)**: vd 5000
 - **Headers**: key/value tùy ý → dùng được cho auth token
 
-**2. ⚠️ MCP server được gọi từ cloud ConvoAI của Agora, KHÔNG phải từ thiết bị.** ("Configure a custom MCP server passed to ConvoAI when a session starts.") Hệ quả cho #30/#14: MCP endpoint của Hub **phải public** (ngrok / cloudflared tunnel) — giả định LAN-only trong `docs/arch.md` cần sửa. Đề xuất: `cloudflared tunnel --url http://localhost:<port>` khi demo.
+**2. ⚠️ MCP server được gọi từ cloud ConvoAI của Agora, KHÔNG phải từ thiết bị.** ("Configure a custom MCP server passed to ConvoAI when a session starts.") Hệ quả cho #30/#14: MCP endpoint của Hub **phải public**. **✅ Đã giải quyết (2026-07-11):** endpoint public sẵn nhờ **Cloud Run** (`…/mcp`) — không cần ngrok/cloudflared nữa; URL cố định, luôn bật.
 
 **3. Không có tiếng Việt** (#26 — closed). Language chỉ có 中文/English/日本語/한국어; voice list không có VN TTS. **Quyết định: demo bằng tiếng Anh.** Follow-up: thử voice multilingual với text tiếng Việt; hỏi mentor Agora về VN voice.
 
@@ -50,6 +53,6 @@
 
 ## Việc tiếp theo (thứ tự)
 
-1. Test Preview trên web với persona hiện tại (câu demo: "who has not paid?", "why is kiosk 3 so high?") — cần mic, làm thủ công.
-2. Khoa dựng stub MCP endpoint → expose public → gắn vào bot (Name `metermind`, URL `https://<tunnel>/mcp`) → verify tool call (#28, đóng nốt #25).
-3. Flash + pair thiết bị (#35).
+1. ✅ **Xong** — Test Preview trên web với persona hiện tại ("who has not paid?", "why is kiosk 3 so high?") → cloud agent trả lời đúng qua MCP tools.
+2. ✅ **Xong** — MCP endpoint deploy lên **Cloud Run** (`https://meter-mind-mcp-fkoupnt5ua-as.a.run.app/mcp`), gắn vào bot, verify tool call OK (#28/#25). Dashboard/Demo URL lên **cùng service** ở `/`.
+3. ⬜ **Còn lại** — Flash + pair thiết bị ESP32-S3 (#35), Build Day 12/07.
