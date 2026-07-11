@@ -14,6 +14,7 @@ import os
 
 from mcp.server.fastmcp import FastMCP
 
+from hub import utility_info
 from hub.core import service
 from hub.web import register_web_routes
 
@@ -51,6 +52,16 @@ def compute_invoice(tenant_id: str, period: str = "2026-07") -> dict:
 def request_recapture(device_id: str) -> dict:
     """Queue a fresh image capture for a meter device."""
     return service.request_recapture(device_id).model_dump()
+
+
+@mcp.tool()
+def ask_utility_info(question: str) -> dict:
+    """General utility information for Vietnam: current electricity/water
+    tariffs, planned outage schedules (e.g. Ho Chi Minh City), how pricing
+    tiers work, regulations. Use for general knowledge questions only — NOT
+    for this landlord's tenants, invoices, meter readings, or payments (use
+    the other tools for those)."""
+    return utility_info.ask_utility_info(question)
 
 
 # Attach the human owner-dashboard (page + /api/*) to this server's HTTP app.

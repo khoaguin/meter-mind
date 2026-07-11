@@ -236,6 +236,50 @@ The simulator is the producer side. The differentiator — the agentic ops layer
 
 ---
 
+## VN utility info — the `ask_utility_info` tool
+
+The one non-deterministic tool in the hub: general Vietnam electricity/water questions ("what's the current EVN tariff?", "any water outages in Ho Chi Minh City?") answered by a **Google ADK agent on Vertex AI Agent Engine**, grounded in Google Search, in voice-friendly English (the device TTS is English-only). Tenant-specific questions stay with the five deterministic tools.
+
+```
+voice device ──▶ Agora ConvoAI (My Bot LLM) ──▶ MCP on Cloud Run (/mcp)
+                                                     │  ask_utility_info
+                                                     ▼
+                                     Vertex AI Agent Engine (vn_utility_agent,
+                                     gemini-2.5-flash + google_search grounding)
+```
+
+**Pieces:**
+
+- [`vn_utility_agent/`](vn_utility_agent/) — the ADK agent (instruction = scope, grounding, English-only, ≤3 spoken sentences). Try it locally: `just agent-run` (needs `gcloud auth application-default login`).
+- [`src/hub/utility_info.py`](src/hub/utility_info.py) — the MCP-side client: ADC-only REST call to Agent Engine, **12 s hard cap**, 1 h in-memory cache keyed on the diacritics-folded question, ≤350-char sentence-boundary truncation, and a speakable apology on any failure — the voice bot never dead-airs.
+- Deployed engine: `projects/161661253262/locations/asia-southeast1/reasoningEngines/507930391567400960` (`just agent-deploy` updates it in place; `just agent-deploy-new` creates a fresh one).
+
+**Env vars on the Cloud Run service:**
+
+| Var | What |
+|---|---|
+| `UTILITY_AGENT_RESOURCE_NAME` | Agent Engine resource name. Unset ⇒ the tool answers "not configured" instead of crashing. |
+| `UTILITY_CANNED_ANSWERS_JSON` | Optional JSON map `{question: answer}` (values may also be `{"answer": …, "as_of": …}`) used **only when the live call fails**. Keys match after diacritics-folding, so `"gia dien hien tai la bao nhieu"` catches the accented question. |
+
+**IAM** — the Cloud Run runtime service account must be able to query Agent Engine:
+
+```bash
+gcloud projects add-iam-policy-binding ai-playground-458112 \
+  --member="serviceAccount:161661253262-compute@developer.gserviceaccount.com" \
+  --role="roles/aiplatform.user" --condition=None
+```
+
+**Updating the canned demo answers** — get fresh live answers (`just agent-test` prints them, or ask the dashboard bot), then re-set the env var:
+
+```bash
+gcloud run services update meter-mind-mcp --region asia-southeast1 \
+  --env-vars-file deploy/cloudrun-env.yaml
+```
+
+Verification: `just agent-test` runs the three golden demo questions (VN + EN) against the live engine; `uv run pytest tests/test_utility_info.py` covers the timeout/fallback/cache paths offline.
+
+---
+
 ## Credits
 
 Built on [**jomjol/AI-on-the-edge-device**](https://github.com/jomjol/AI-on-the-edge-device) (the ESP32-CAM firmware + `dig-class11` model) and its [digit dataset](https://github.com/jomjol/neural-network-digital-counter-readout). The original brainstorm lives in [`docs/idea.md`](docs/idea.md). Diagram sources (`.drawio`) are in [`assets/diagrams/`](assets/diagrams/).

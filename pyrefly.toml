@@ -19,6 +19,11 @@ project-excludes = [
 ]
 python-version = "3.12"
 
+# Two import roots: `src/` (hub, edgesim) and the repo root, where the
+# `vn_utility_agent` ADK package lives (ADK's deploy CLI expects the agent
+# package at top level, not under src/).
+search-path = ["src", "."]
+
 preset = "default"
 
 # Baseline of pre-existing type errors. Empty today. It exists so a future PR

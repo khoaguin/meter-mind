@@ -7,6 +7,7 @@ requires-python = ">=3.12"
 dependencies = [
     "ai-edge-litert>=2.1.6",
     "fastapi>=0.139.0",
+    "google-auth>=2.55.2",
     "httpx>=0.28.1",
     "loguru>=0.7.3",
     "mcp>=1.28.1",
@@ -32,11 +33,19 @@ module-name = "edgesim"
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 pythonpath = ["src"]
-markers = ["integration: requires a running mosquitto on localhost:1883"]
-# integration tests need a live broker — opt in with `pytest -m integration`
-addopts = "-m 'not integration'"
+markers = [
+    "integration: requires a running mosquitto on localhost:1883",
+    "manual: live-network demo checks (deployed Agent Engine + ADC) — run explicitly",
+]
+# integration tests need a live broker, manual tests need GCP creds + network —
+# both are opt-in: `pytest -m integration` / `pytest -m manual`.
+addopts = "-m 'not integration and not manual'"
 
 [dependency-groups]
+agent = [
+    "google-adk>=2.4.0",
+    "google-cloud-aiplatform[adk,agent-engines]>=1.160.0",
+]
 dev = [
     "pre-commit>=4.6.0",
     "pyrefly>=1.1.1",

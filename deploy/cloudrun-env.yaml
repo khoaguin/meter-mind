@@ -1,0 +1,22 @@
+# Env vars for the meter-mind-mcp Cloud Run service (`gcloud run services update
+# meter-mind-mcp --region asia-southeast1 --env-vars-file deploy/cloudrun-env.yaml`).
+# NOTE: --env-vars-file REPLACES the service's whole env-var set — keep every var here.
+#
+# UTILITY_CANNED_ANSWERS_JSON is the demo safety net: consulted ONLY when the live
+# Agent Engine call fails/times out. Keys are diacritics-folded before matching, so
+# plain-ASCII keys catch the accented Vietnamese questions. Refresh the answers
+# before a demo (see README "Updating the canned demo answers").
+UTILITY_AGENT_RESOURCE_NAME: "projects/161661253262/locations/asia-southeast1/reasoningEngines/507930391567400960"
+UTILITY_CANNED_ANSWERS_JSON: >-
+  {"gia dien hien tai la bao nhieu":
+   {"answer": "As of July 2026, the average retail electricity price in Vietnam is 2,204 dong, that is two thousand two hundred four dong per kilowatt hour, according to EVN, with residential tiers rising to about 3,460 dong for heavy use.",
+    "as_of": "2026-07-11"},
+   "what is the current electricity price in vietnam":
+   {"answer": "As of July 2026, the average retail electricity price in Vietnam is 2,204 dong, that is two thousand two hundred four dong per kilowatt hour, according to EVN, with residential tiers rising to about 3,460 dong for heavy use.",
+    "as_of": "2026-07-11"},
+   "sap toi co lich cup nuoc o thanh pho ho chi minh khong":
+   {"answer": "Yes. According to SAWACO, parts of Tan Son Hoa and Tan Binh wards have planned overnight water interruptions from about 11:30 PM on July 14 to 5 AM on July 15, 2026, for pipeline work.",
+    "as_of": "2026-07-11"},
+   "any upcoming water outages in ho chi minh city":
+   {"answer": "Yes. According to SAWACO, parts of Tan Son Hoa and Tan Binh wards have planned overnight water interruptions from about 11:30 PM on July 14 to 5 AM on July 15, 2026, for pipeline work.",
+    "as_of": "2026-07-11"}}
