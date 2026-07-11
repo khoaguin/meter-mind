@@ -14,8 +14,19 @@
 | Language | English (persona hiểu tiếng Việt nhưng luôn trả lời EN) |
 | Voice | Mabel (default BytePlus). EN thuần: Tim. Multilingual đáng thử: Jess, Vivi, Mindy |
 | System prompt / persona / welcome | ✅ Đã set (MeterMind landlord copilot, câu ngắn cho TTS, đọc số tự nhiên, chỉ trả lời từ MCP tool data) |
-| MCP server | ⬜ Chưa gắn — chờ endpoint từ Khoa |
+| MCP server | ✅ Đã verify + gắn vào bot — `meter-mind-hub`, URL `https://meter-mind-mcp-161661253262.asia-southeast1.run.app/mcp`, timeout 10000ms |
 | Flash thiết bị | ⬜ Chưa làm |
+
+### Kết quả verify MCP endpoint (2026-07-09, test trực tiếp JSON-RPC)
+
+- `initialize` ✅ — server `meter-mind-hub`, protocol 2025-03-26, streamable HTTP + SSE, có `mcp-session-id`.
+- `tools/list` ✅ — đủ 5 tools đúng contract: `query_readings`, `explain_anomaly`, `list_unpaid`, `compute_invoice`, `request_recapture`.
+- `tools/call` ✅ — `list_unpaid` (room2 Trần Thị Bình 270k, room3 Lê Văn Cường 1.86tr VND); `compute_invoice room2` (18 m³ × 15,000 = 270,000 VND); `explain_anomaly kiosk3-elec` (spike 4x ngày 2026-07-14); `query_readings kiosk1-water` (12 m³); `request_recapture` → queued. Validation lỗi trả về đàng hoàng (missing field, unknown device).
+- ⚠️ Lưu ý: `device_id` phải đúng dạng MainTopic (`kiosk3-elec`, không phải `kiosk3`) — đã thêm mapping vào system prompt của bot. Số float dài (11.999999999999995) — đã dặn bot làm tròn khi nói; nên đề xuất Khoa round ở Core.
+- Demo beat anomaly nằm ở **kiosk3-elec** (không phải kiosk2) — khớp seed freeze trên board.
+| MCP server | ✅ **Đã gắn & chạy** — endpoint `https://meter-mind-mcp-fkoupnt5ua-as.a.run.app/mcp` (deploy qua CD lên Cloud Run). Cloud agent trả lời được các câu demo qua MCP tools (verified trong Preview). |
+| Owner dashboard / **Demo URL** | ✅ **Đã build & deploy** — cùng service Cloud Run, phục vụ ở `/` (root): `https://meter-mind-mcp-fkoupnt5ua-as.a.run.app/`. Link bấm-được cho judge (không login, không mic): fleet · spike kiosk 3 · hóa đơn · video demo. |
+| Flash thiết bị ESP32-S3 | ⬜ Chưa làm — để **Build Day 12/07** |
 
 ## Phát hiện quan trọng
 
