@@ -41,10 +41,15 @@ def test_clean_device_has_no_anomaly(seeded_session: Session) -> None:
 
 
 def test_unpaid_count_and_members(seeded_session: Session) -> None:
-    # WHY: beat #3 — "a couple unpaid" is exactly room2 + room3.
+    # WHY: beat #3 — the unpaid set is exactly room2 + room3 + room6 + room7.
     unpaid = service.list_unpaid()
-    assert unpaid.count == 2
-    assert {tenant.tenant_id for tenant in unpaid.tenants} == {"room2", "room3"}
+    assert unpaid.count == 4
+    assert {tenant.tenant_id for tenant in unpaid.tenants} == {
+        "room2",
+        "room3",
+        "room6",
+        "room7",
+    }
 
 
 def test_invoice_room2_is_270k(seeded_session: Session) -> None:
@@ -119,11 +124,19 @@ def test_dashboard_overview_composes_the_five_beats(seeded_session: Session) -> 
     assert overview.invoices["room2"].amount == pytest.approx(270_000, abs=1e-3)
     assert overview.invoices["room3"].amount == pytest.approx(1_860_000, abs=1e-3)
 
-    # beat #3 — room2 + room3 unpaid, room1 paid (the card badge derives from this)
+    # beat #3 — the unpaid set drives the card badges (paid = the complement)
     unpaid_ids = {tenant.tenant_id for tenant in overview.unpaid.tenants}
-    assert unpaid_ids == {"room2", "room3"}
+    assert unpaid_ids == {"room2", "room3", "room6", "room7"}
     paid = {card.tenant_id: card.paid for card in overview.devices}
-    assert paid == {"room1": True, "room2": False, "room3": False}
+    assert paid == {
+        "room1": True,
+        "room2": False,
+        "room3": False,
+        "room4": True,
+        "room5": True,
+        "room6": False,
+        "room7": False,
+    }
 
     # beat #2 — kiosk3 flagged, and its series still carries the 4× spike day
     assert "kiosk3-elec" in overview.anomalies

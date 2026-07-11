@@ -17,7 +17,15 @@ def test_seed_yaml_validates() -> None:
     # WHY: the frozen seed.yaml must load into SeedData or every downstream reader breaks.
     seed = load_seed_data()
     assert seed.period == "2026-07"
-    assert {a.tenant_id for a in seed.accounts} == {"room1", "room2", "room3"}
+    assert {a.tenant_id for a in seed.accounts} == {
+        "room1",
+        "room2",
+        "room3",
+        "room4",
+        "room5",
+        "room6",
+        "room7",
+    }
     assert seed.tariffs == {"water": 15000, "elec": 3000}
 
 

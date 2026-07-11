@@ -2,9 +2,13 @@ currency: VND
 period: "2026-07"
 tariffs: { water: 15000, elec: 3000 }   # VND per m³ / kWh
 accounts:
-  - { tenant_id: room1, room: "Room 1", name: "Nguyễn Văn An",  device_id: kiosk1-water, meter_type: water, unit: m3,  usage: 12,  paid: true }
-  - { tenant_id: room2, room: "Room 2", name: "Trần Thị Bình", device_id: kiosk2-water, meter_type: water, unit: m3,  usage: 18,  paid: false }
-  - { tenant_id: room3, room: "Room 3", name: "Lê Văn Cường",  device_id: kiosk3-elec,  meter_type: elec,  unit: kWh, usage: 620, paid: false }
+  - { tenant_id: room1, room: "Room 1", name: "Alex",    device_id: kiosk1-water, meter_type: water, unit: m3,  usage: 12,  paid: true }
+  - { tenant_id: room2, room: "Room 2", name: "Bob",     device_id: kiosk2-water, meter_type: water, unit: m3,  usage: 18,  paid: false }
+  - { tenant_id: room3, room: "Room 3", name: "Charlie", device_id: kiosk3-elec,  meter_type: elec,  unit: kWh, usage: 620, paid: false }
+  - { tenant_id: room4, room: "Room 4", name: "Dave",    device_id: kiosk4-elec,  meter_type: elec,  unit: kWh, usage: 180, paid: true }
+  - { tenant_id: room5, room: "Room 5", name: "Eve",     device_id: kiosk5-water, meter_type: water, unit: m3,  usage: 9,   paid: true }
+  - { tenant_id: room6, room: "Room 6", name: "Frank",   device_id: kiosk6-elec,  meter_type: elec,  unit: kWh, usage: 240, paid: false }
+  - { tenant_id: room7, room: "Room 7", name: "Grace",   device_id: kiosk7-water, meter_type: water, unit: m3,  usage: 22,  paid: false }
 anomaly:
   device_id: kiosk3-elec
   kind: spike
