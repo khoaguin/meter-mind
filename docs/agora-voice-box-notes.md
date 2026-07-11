@@ -14,9 +14,8 @@
 | Language | English (persona hiểu tiếng Việt nhưng luôn trả lời EN) |
 | Voice | Mabel (default BytePlus). EN thuần: Tim. Multilingual đáng thử: Jess, Vivi, Mindy |
 | System prompt / persona / welcome | ✅ Đã set (MeterMind landlord copilot, câu ngắn cho TTS, đọc số tự nhiên, chỉ trả lời từ MCP tool data) |
-| MCP server | ✅ **Đã gắn & chạy** — endpoint `https://meter-mind-mcp-fkoupnt5ua-as.a.run.app/mcp` (deploy qua CD lên Cloud Run). Cloud agent trả lời được các câu demo qua MCP tools (verified trong Preview). |
-| Owner dashboard / **Demo URL** | ✅ **Đã build & deploy** — cùng service Cloud Run, phục vụ ở `/` (root): `https://meter-mind-mcp-fkoupnt5ua-as.a.run.app/`. Link bấm-được cho judge (không login, không mic): fleet · spike kiosk 3 · hóa đơn · video demo. |
-| Flash thiết bị ESP32-S3 | ⬜ Chưa làm — để **Build Day 12/07** |
+| MCP server | ⬜ Chưa gắn — chờ endpoint từ Khoa |
+| Flash thiết bị | ⬜ Chưa làm |
 
 ## Phát hiện quan trọng
 
