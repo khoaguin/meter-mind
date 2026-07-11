@@ -21,6 +21,7 @@ from pydantic import BaseModel
 from sqlmodel import Session, col, select
 
 from hub.core.contract import (
+    CURRENCY,
     AnomalyExplanation,
     Invoice,
     MeterType,
@@ -316,6 +317,91 @@ def list_devices() -> list[dict[str, str]]:
                     "unit": device.unit,
                     "tenant_id": tenant.tenant_id if tenant else "",
                     "room": tenant.room if tenant else "",
+                    "name": tenant.name if tenant else "",
                 }
             )
     return result
+
+
+class DeviceCard(BaseModel):
+    """One device row on the dashboard — device + tenant + the derived usage/amount/paid."""
+
+    device_id: str
+    tenant_id: str
+    room: str
+    name: str
+    meter_type: MeterType
+    unit: Unit
+    usage: float
+    latest_value: float
+    paid: bool
+    amount: float | None  # None when a device has no tenant
+    has_anomaly: bool
+
+
+class DashboardOverview(BaseModel):
+    """The whole owner-dashboard payload in one validated model — the page fetches this once.
+
+    NOT a frozen tool (a dashboard convenience, like `list_devices`), but still a
+    Pydantic model at the boundary: it's what crosses service -> HTTP -> browser.
+    Reuses the frozen models so it can never drift from the voice answers.
+    """
+
+    period: str
+    currency: str
+    devices: list[DeviceCard]
+    unpaid: UnpaidList
+    readings: dict[str, ReadingsSummary]
+    anomalies: dict[str, AnomalyExplanation]
+    invoices: dict[str, Invoice]
+
+
+def dashboard_overview(period: str = DEFAULT_PERIOD) -> DashboardOverview:
+    """Compose the frozen tools into the one payload the dashboard renders.
+
+    No model, no new arithmetic: every number already came from `query_readings`
+    / `explain_anomaly` / `list_unpaid` / `compute_invoice` above.
+    """
+    unpaid = list_unpaid(period)
+    unpaid_ids = {tenant.tenant_id for tenant in unpaid.tenants}
+    cards: list[DeviceCard] = []
+    readings: dict[str, ReadingsSummary] = {}
+    anomalies: dict[str, AnomalyExplanation] = {}
+    invoices: dict[str, Invoice] = {}
+    for device in list_devices():
+        device_id = device["device_id"]
+        tenant_id = device["tenant_id"]
+        summary = query_readings(device_id, period)
+        readings[device_id] = summary
+        anomaly = explain_anomaly(device_id)
+        if anomaly.has_anomaly:
+            anomalies[device_id] = anomaly
+        amount: float | None = None
+        if tenant_id:
+            invoice = compute_invoice(tenant_id, period)
+            invoices[tenant_id] = invoice
+            amount = invoice.amount
+        cards.append(
+            DeviceCard(
+                device_id=device_id,
+                tenant_id=tenant_id,
+                room=device["room"],
+                name=device["name"],
+                meter_type=summary.meter_type,
+                unit=summary.unit,
+                usage=summary.usage,
+                latest_value=summary.latest_value,
+                paid=tenant_id not in unpaid_ids if tenant_id else True,
+                amount=amount,
+                has_anomaly=anomaly.has_anomaly,
+            )
+        )
+    return DashboardOverview(
+        period=period,
+        currency=CURRENCY,
+        devices=cards,
+        unpaid=unpaid,
+        readings=readings,
+        anomalies=anomalies,
+        invoices=invoices,
+    )

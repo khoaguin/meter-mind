@@ -2,14 +2,15 @@
 
 **Turn a fleet of $10 camera-on-a-chip meter readers into an agentic operations copilot.**
 
-A landlord with meters scattered across many units spends hours every month walking around, photographing dials, typing numbers into a spreadsheet, computing bills, and chasing late payers. MeterMind is the software that does all of that automatically — starting from the cheapest possible sensor and ending at a chat box the owner can ask *"who hasn't paid?"*.
+A landlord with meters scattered across many units spends hours every month walking around, photographing dials, typing numbers into a spreadsheet, computing bills, and chasing late payers. MeterMind is the software that does all of that automatically — starting from the cheapest possible sensor and ending at a voice box the owner can *ask* (in Vietnamese or English) *"who hasn't paid?"*.
 
 |  |  |
 |---|---|
 | **Event** | Agentic AI Build Week (AABW) — HCMC, July 2026 · Track: Robotics & Physical AI |
 | **Foundation** | [jomjol AI-on-the-edge-device](https://github.com/jomjol/AI-on-the-edge-device) — a ~$10 ESP32-CAM that reads a meter on-chip |
-| **Built today** | `edgesim` — a virtual fleet that emits the *exact* jomjol MQTT contract |
-| **Stack** | Python 3.12 · `uv` · `ai-edge-litert` (TFLite) · `paho-mqtt` · `pydantic` v2 · `pillow` · `pyyaml` |
+| **Built** | `edgesim` (virtual jomjol fleet) **+ the hub** — deterministic Core, SQLite, REST API, an **MCP server on Cloud Run** for Agora's voice box, and a live **owner dashboard** on the same service |
+| **Demo** | **Live** → [meter-mind-mcp…run.app](https://meter-mind-mcp-fkoupnt5ua-as.a.run.app/) (dashboard at `/`, Agora bot at `…/mcp`) · [`assets/demoVideo.mp4`](assets/demoVideo.mp4) — walkthrough |
+| **Stack** | Python 3.12 · `uv` · `ai-edge-litert` (TFLite) · `paho-mqtt` · `pydantic` v2 · `pillow` · `pyyaml` · `fastapi` · `sqlmodel` · `mcp` (FastMCP) |
 
 ---
 
@@ -19,7 +20,7 @@ The base sensor **senses** — it reads one meter and shouts a number over WiFi.
 
 ![MeterMind system architecture — physical meters up through edge readers, broker, hub, core, agent, to the owner UI](assets/diagrams/vision.png)
 
-> **Status — what's actually built.** This repo currently delivers the **green box**: `edgesim`, a Python fleet that produces byte-exact jomjol readings so the rest of the stack can be built against a realistic data stream today, with **zero hardware**. The broker (mosquitto) is provided via Docker. Everything drawn with a **dashed amber** border — hub, billing core, AI copilot, owner UI — is the roadmap, not yet implemented. A real flashed ESP32-CAM (also dashed) drops in later as just one more producer on the same contract.
+> **Status — what's actually built.** **`edgesim`** (the green producer box) is a Python fleet that emits byte-exact jomjol readings, so the rest of the stack builds against a realistic data stream today with **zero hardware** (the mosquitto broker is provided via Docker). **The hub is built too:** a deterministic **Core** (tariff math, invoicing, anomaly detection — *code, no model*), a **SQLite** store, a **REST API**, and an **MCP server deployed to Cloud Run** exposing the five demo tools. The **Agora voice copilot** is built too: the My Bot ConvoAI cloud agent answers over those MCP tools — *no Claude anywhere in the hub*. Still to come (the dashed boxes): the **owner dashboard**, and a real ESP32-CAM that drops in later as one more producer on the same contract.
 
 ---
 
@@ -61,7 +62,7 @@ If you know how the ESP32-CAM works but not the code (or vice-versa), this is th
 |---|---|---|
 | The number on the meter face (current + last accepted) | `DeviceState.value` / `.pre_value` | `device.py` |
 | One meter-reader device (id, type, digits, decimals) | `VirtualDevice` + `DeviceConfig` | `device.py` |
-| How usage moves the number (steady / leak / dead / flaky) | `make_scenario(kind)` → `Tick{delta, rolling}` | `scenarios.py` |
+| How usage moves the number (steady / leak / dead / flaky) | `make_scenario(kind, seed)` → `Tick{delta, rolling}` | `scenarios.py` |
 | Camera photographs the digit roller / LCD | `CropBank` · `render_strip` · `split_strip` | `imagery.py` |
 | On-chip neural net recognizes each digit | `DigitReader.predict_crop` → `DigitPrediction` | `reader.py` |
 | Firmware assembles digits into one reading | `assemble()` → `MeterReadResult` | `assemble.py` |
@@ -128,6 +129,14 @@ meter-mind/
 │   ├── publisher.py   # Publisher — paho-mqtt wrapper (flat + /json + status)
 │   ├── fleet.py       # run_fleet — asyncio scheduler over N devices + YAML config
 │   └── cli.py         # `edgesim run --config fleet.yaml`
+├── src/hub/                # the ops layer above the sensor
+│   ├── core/
+│   │   ├── contract.py     # FROZEN Core contract — the 5 tools' return models
+│   │   ├── service.py      # deterministic Core: usage, invoicing, spike detection (no model)
+│   │   └── seed.yaml        # demo dataset (leak on kiosk 3, unpaid tenants)
+│   ├── db/                 # SQLModel tables + idempotent seed loader (SQLite)
+│   ├── api.py              # FastAPI REST — reads for the dashboard + a recapture POST
+│   └── mcp_server.py       # FastMCP streamable-http /mcp — the 5 tools Agora calls
 ├── scripts/fetch_assets.py   # download jomjol model + digit crops into data/
 ├── tests/                    # pytest — one file per module + a contract test
 ├── data/                     # (fetched) dig-class11 model + labeled digit crops
@@ -206,14 +215,23 @@ Run the E2E test locally with the broker up: `uv run pytest -m integration`.
 
 ---
 
-## Roadmap
+## The ops layer above the sensor
 
-The simulator is the producer side. The differentiator — the agentic ops layer — is next:
+The simulator is the producer side. The differentiator — the agentic ops layer — is largely built.
 
-- **Hub** — subscribe to the broker, ingest readings, persist to a database (readings · tenants · tariffs · payments).
-- **Deterministic core** — tariff math, invoicing, payment status, threshold anomaly flags. *Code, not a model* — anything a `match`/`if` can answer.
-- **Agentic copilot** — Claude + tools (`query_readings`, `compute_invoice`, `list_unpaid`, `draft_reminder`, `get_low_confidence`, `request_recapture`) for classification, drafting, and the low-confidence recapture loop.
-- **Owner UI** — a bilingual (VN/EN) chat + fleet dashboard.
+**Built (on `main`):**
+
+- **Hub Core** — tariff math, invoicing, payment status, threshold anomaly detection. *Code, not a model* — anything a `match`/`if` can answer.
+- **SQLite store** — readings · tenants · tariffs · payments · devices, seeded to drive the demo.
+- **REST API + MCP server** — the five demo tools (`query_readings`, `explain_anomaly`, `list_unpaid`, `compute_invoice`, `request_recapture`), served over Streamable HTTP and **deployed to Cloud Run**.
+- **Agora cloud agent** — My Bot ConvoAI wired to the MCP endpoint; it already answers the demo questions over the five tools (verified in the voice studio).
+- **Owner dashboard** — a live, read-only page served at `/` on the **same Cloud Run service** as `/mcp` (the judge-clickable **Demo URL**): fleet cards, the kiosk-3 usage spike, billing (270k / 1.86M), a recapture button, and the embedded demo video. Reads the same baked DB as the bot, so it can't drift from the voice answers.
+
+> **Where's the brain? Not in the hub.** The signed-off architecture is **Agora-only, zero Claude in the hub** ([`docs/arch.md`](docs/arch.md)). Agora's My Bot LLM does all the routing and phrasing over MCP; every Core tool — including `explain_anomaly` — is **deterministic code** (the detector computes the spike factor; the tool returns a fixed sentence around it). The MCP endpoint is the second seam: Track B just points the voice box at one URL, nothing is flashed to the device.
+
+**Next:**
+
+- **Live ingest** — edgesim → hub DB over MQTT (stretch; the demo runs off seed data + Core, not the live pipe).
 - **Hardware** — flash a real ESP32-CAM and point it at the same broker.
 
 ---

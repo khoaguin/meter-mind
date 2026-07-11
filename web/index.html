@@ -1,0 +1,272 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>MeterMind · Fleet Ops</title>
+<style>
+  :root {
+    --bg: #0b0d10; --panel: #14171c; --panel-2: #191d23; --border: #23272e;
+    --ink: #e8eef6; --muted: #8b97a7; --faint: #5c6675;
+    --mint: #7cf0c4; --mint-bg: #123026;
+    --amber: #f2b45a; --amber-bg: #2c2410; --danger: #ff6a4d; --danger-bg: #2e1712;
+    --accent: #ec5a34; --accent-ink: #fff;
+    --mono: ui-monospace, "SF Mono", "JetBrains Mono", "Courier New", monospace;
+    --sans: "Inter", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; background: var(--bg); color: var(--ink);
+    font-family: var(--sans); line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+  }
+  .wrap { max-width: 1080px; margin: 0 auto; padding: 32px 20px 64px; }
+  .label { font-family: var(--mono); text-transform: uppercase; letter-spacing: .14em; font-size: 11px; color: var(--muted); }
+  a { color: var(--mint); }
+
+  /* hero */
+  header { border-bottom: 1px solid var(--border); padding-bottom: 22px; margin-bottom: 28px; }
+  .brand { display: flex; align-items: baseline; gap: 12px; flex-wrap: wrap; }
+  .brand h1 { font-size: 30px; margin: 0; letter-spacing: -.02em; }
+  .brand .tag { color: var(--muted); font-size: 15px; }
+  .strip { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 16px; }
+  .strip .pill {
+    font-family: var(--mono); font-size: 11px; letter-spacing: .06em; text-transform: uppercase;
+    background: var(--panel); border: 1px solid var(--border); color: var(--muted);
+    padding: 5px 10px; border-radius: 999px;
+  }
+  .strip .pill b { color: var(--mint); font-weight: 600; }
+
+  section { margin-top: 34px; }
+  section > .label { display: block; margin-bottom: 14px; }
+
+  /* device cards */
+  .cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 14px; }
+  .card {
+    background: var(--panel); border: 1px solid var(--border); border-radius: 12px; padding: 16px 16px 18px;
+    position: relative; overflow: hidden;
+  }
+  .card.anom { border-color: #4a2a20; }
+  .card .top { display: flex; justify-content: space-between; align-items: flex-start; gap: 8px; }
+  .card .room { font-size: 18px; font-weight: 600; }
+  .card .name { color: var(--muted); font-size: 13px; }
+  .card .dev { font-family: var(--mono); font-size: 11px; color: var(--faint); margin-top: 2px; }
+  .card .usage { margin-top: 14px; font-size: 26px; font-weight: 650; letter-spacing: -.02em; }
+  .card .usage span { font-size: 13px; color: var(--muted); font-weight: 500; }
+  .card .amount { margin-top: 4px; font-family: var(--mono); font-size: 13px; color: var(--muted); }
+
+  .chip {
+    font-family: var(--mono); font-size: 10.5px; letter-spacing: .08em; text-transform: uppercase;
+    padding: 4px 8px; border-radius: 999px; white-space: nowrap; border: 1px solid transparent;
+  }
+  .chip.paid   { background: var(--mint-bg);   color: var(--mint);   border-color: #1d4a39; }
+  .chip.unpaid { background: var(--amber-bg);  color: var(--amber);  border-color: #4a3c17; }
+  .chip.spike  { background: var(--danger-bg); color: var(--danger); border-color: #5a2318; }
+
+  /* chart */
+  .panel { background: var(--panel); border: 1px solid var(--border); border-radius: 14px; padding: 20px; }
+  .chart-head { display: flex; align-items: baseline; gap: 14px; flex-wrap: wrap; margin-bottom: 6px; }
+  .chart-head .big { font-size: 22px; font-weight: 650; }
+  .chart-head .sub { color: var(--muted); font-size: 13px; font-family: var(--mono); }
+  svg.chart { width: 100%; height: auto; display: block; margin-top: 8px; overflow: visible; }
+  .caption { margin-top: 12px; padding: 12px 14px; background: var(--danger-bg); border: 1px solid #5a2318;
+             border-radius: 10px; color: #ffd9cf; font-size: 14px; }
+  .caption b { color: var(--danger); }
+
+  /* billing table */
+  table { width: 100%; border-collapse: collapse; }
+  th, td { text-align: left; padding: 12px 12px; border-bottom: 1px solid var(--border); }
+  th { font-family: var(--mono); text-transform: uppercase; letter-spacing: .1em; font-size: 10.5px; color: var(--muted); font-weight: 500; }
+  td.amt { font-family: var(--mono); text-align: right; font-variant-numeric: tabular-nums; }
+  tr:last-child td { border-bottom: none; }
+  tfoot td { font-weight: 650; border-top: 2px solid var(--border); border-bottom: none; }
+
+  /* buttons */
+  .btn {
+    font-family: var(--mono); text-transform: uppercase; letter-spacing: .1em; font-size: 12px; font-weight: 600;
+    color: var(--accent-ink); background: var(--accent); border: none; cursor: pointer;
+    padding: 10px 18px; min-height: 40px;
+    clip-path: polygon(0 0, 100% 0, 100% 65%, calc(100% - 12px) 100%, 0 100%);
+  }
+  .btn:hover { filter: brightness(1.08); }
+  .btn:disabled { opacity: .55; cursor: default; }
+  .btn.ghost { background: transparent; color: var(--muted); border: 1px solid var(--border); clip-path: none; border-radius: 8px; }
+  .act-row { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; }
+  .ack { font-family: var(--mono); font-size: 12px; color: var(--mint); }
+
+  /* video */
+  video { width: 100%; border-radius: 12px; border: 1px solid var(--border); background: #000; display: block; }
+
+  /* states */
+  .note { color: var(--muted); font-size: 14px; }
+  .skeleton { color: var(--faint); font-family: var(--mono); padding: 40px 0; text-align: center; }
+  .errcard { background: var(--danger-bg); border: 1px solid #5a2318; border-radius: 12px; padding: 20px; }
+  .errcard h3 { margin: 0 0 6px; color: var(--danger); }
+  footer { margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--border); color: var(--muted); font-size: 13px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="brand">
+      <h1>🔌 MeterMind</h1>
+      <span class="tag">a $10 meter-reader fleet you talk to</span>
+    </div>
+    <div class="strip">
+      <span class="pill">listen · speak · see · act</span>
+      <span class="pill"><b>live</b> Agora cloud agent</span>
+      <span class="pill">MCP on <b>Cloud Run</b></span>
+      <span class="pill">deterministic <b>Core</b> — no LLM in the hub</span>
+      <span class="pill" id="period-pill">period —</span>
+    </div>
+  </header>
+
+  <main id="app">
+    <div class="skeleton">Loading fleet…</div>
+  </main>
+
+  <section>
+    <span class="label">The demo — listen · speak · act</span>
+    <video controls preload="metadata" src="/demoVideo.mp4"></video>
+  </section>
+</div>
+
+<script>
+  const PERIOD = new URLSearchParams(location.search).get("period") || "2026-07";
+  const money = new Intl.NumberFormat("vi-VN", { maximumFractionDigits: 0 });
+  const fmtMoney = (n) => money.format(Math.round(n)) + "₫";
+  const fmtUsage = (n) => (Math.round(n * 10) / 10).toLocaleString("en-US");
+  const el = (html) => { const t = document.createElement("template"); t.innerHTML = html.trim(); return t.content.firstElementChild; };
+  const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+
+  async function load() {
+    const app = document.getElementById("app");
+    app.innerHTML = '<div class="skeleton">Loading fleet…</div>';
+    try {
+      const res = await fetch(`/api/overview?period=${encodeURIComponent(PERIOD)}`);
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      render(await res.json());
+    } catch (err) {
+      app.innerHTML = "";
+      const card = el(`<div class="errcard"><h3>Couldn't load the fleet</h3>
+        <div class="note">${esc(err.message)} — the hub API didn't answer.</div></div>`);
+      const retry = el('<button class="btn ghost" style="margin-top:14px">Retry</button>');
+      retry.onclick = load; card.appendChild(retry); app.appendChild(card);
+    }
+  }
+
+  function render(ov) {
+    document.getElementById("period-pill").textContent = "period " + ov.period;
+    const app = document.getElementById("app");
+    app.innerHTML = "";
+
+    // A. fleet cards
+    const cards = el('<section><span class="label">Fleet · latest reads</span><div class="cards"></div></section>');
+    const grid = cards.querySelector(".cards");
+    for (const d of ov.devices) {
+      const badge = d.paid ? '<span class="chip paid">Paid</span>' : '<span class="chip unpaid">Unpaid</span>';
+      const spike = d.has_anomaly ? ' <span class="chip spike">⚠ Spike</span>' : "";
+      grid.appendChild(el(`<div class="card ${d.has_anomaly ? "anom" : ""}">
+        <div class="top">
+          <div><div class="room">${esc(d.room)}</div><div class="name">${esc(d.name)}</div>
+            <div class="dev">${esc(d.device_id)}</div></div>
+          <div style="text-align:right">${badge}${spike}</div>
+        </div>
+        <div class="usage">${fmtUsage(d.usage)} <span>${esc(d.unit)}</span></div>
+        <div class="amount">${d.amount != null ? "bill " + fmtMoney(d.amount) : "—"}</div>
+      </div>`));
+    }
+    app.appendChild(cards);
+
+    // B. hero usage chart + anomaly (kiosk3-elec, or any anomalous device)
+    const anomId = Object.keys(ov.anomalies)[0] || ov.devices.find((d) => d.has_anomaly)?.device_id;
+    if (anomId && ov.readings[anomId]) {
+      const summary = ov.readings[anomId], anom = ov.anomalies[anomId];
+      const sec = el(`<section><span class="label">Usage over the month — the money shot</span>
+        <div class="panel">
+          <div class="chart-head">
+            <span class="big">${esc(anomId)}</span>
+            <span class="sub">usage ${fmtUsage(summary.usage)} ${esc(summary.unit)} · ${esc(summary.period)}</span>
+          </div>
+        </div></section>`);
+      sec.querySelector(".panel").appendChild(buildChart(summary.series, anom));
+      if (anom) sec.querySelector(".panel").appendChild(
+        el(`<div class="caption"><b>Why is it high?</b> ${esc(anom.explanation)}</div>`));
+      app.appendChild(sec);
+    }
+
+    // C. billing table
+    const billing = el(`<section><span class="label">Billing · who hasn't paid</span>
+      <div class="panel"><table><thead><tr>
+        <th>Room</th><th>Tenant</th><th>Meter</th><th style="text-align:right">Amount due</th><th>Status</th>
+      </tr></thead><tbody></tbody>
+      <tfoot><tr><td colspan="3">Outstanding</td><td class="amt" id="tot"></td><td></td></tr></tfoot>
+      </table></div></section>`);
+    const tb = billing.querySelector("tbody");
+    let total = 0;
+    for (const inv of Object.values(ov.invoices)) {
+      if (!inv.paid) total += inv.amount;
+      tb.appendChild(el(`<tr>
+        <td>${esc(inv.room)}</td>
+        <td>${esc(ov.devices.find((d) => d.tenant_id === inv.tenant_id)?.name || inv.tenant_id)}</td>
+        <td class="label" style="text-transform:none">${esc(inv.meter_type)}</td>
+        <td class="amt">${fmtMoney(inv.amount)}</td>
+        <td>${inv.paid ? '<span class="chip paid">Paid</span>' : '<span class="chip unpaid">Unpaid</span>'}</td>
+      </tr>`));
+    }
+    billing.querySelector("#tot").textContent = fmtMoney(total);
+    app.appendChild(billing);
+
+    // D. act — recapture the anomalous device
+    if (anomId) {
+      const act = el(`<section><span class="label">Act · ask a meter to re-read</span>
+        <div class="panel act-row"></div></section>`);
+      const row = act.querySelector(".act-row");
+      const btn = el(`<button class="btn">Request re-read · ${esc(anomId)}</button>`);
+      const ack = el('<span class="ack"></span>');
+      btn.onclick = async () => {
+        btn.disabled = true; ack.textContent = "queuing…";
+        try {
+          const r = await fetch(`/api/devices/${encodeURIComponent(anomId)}/recapture`, { method: "POST" });
+          const j = await r.json();
+          ack.textContent = "✓ " + j.message;
+        } catch (e) { ack.textContent = "failed: " + e.message; }
+        finally { btn.disabled = false; }
+      };
+      row.appendChild(btn); row.appendChild(ack); app.appendChild(act);
+    }
+  }
+
+  function buildChart(series, anom) {
+    const W = 760, H = 240, pad = 34;
+    const vals = series.map((p) => p.value);
+    const maxV = Math.max(...vals, 1);
+    const maxIdx = vals.indexOf(Math.max(...vals));
+    const n = series.length;
+    const x = (i) => pad + (i * (W - 2 * pad)) / Math.max(n - 1, 1);
+    const y = (v) => H - pad - (v / maxV) * (H - 2 * pad);
+    const line = series.map((p, i) => `${x(i).toFixed(1)},${y(p.value).toFixed(1)}`).join(" ");
+    const dots = series.map((p, i) => {
+      const hot = i === maxIdx;
+      return `<circle cx="${x(i).toFixed(1)}" cy="${y(p.value).toFixed(1)}" r="${hot ? 5 : 2.4}"
+        fill="${hot ? "#ff6a4d" : "#7cf0c4"}"/>`;
+    }).join("");
+    const spikeDay = (anom && anom.detected_at) || series[maxIdx].timestamp.slice(0, 10);
+    const lbl = `${spikeDay}${anom && anom.factor ? " · " + anom.factor + "×" : ""}`;
+    const sx = x(maxIdx), sy = y(maxV);
+    return el(`<svg class="chart" viewBox="0 0 ${W} ${H}" role="img" aria-label="usage over time with a spike">
+      <line x1="${pad}" y1="${H - pad}" x2="${W - pad}" y2="${H - pad}" stroke="#23272e"/>
+      <line x1="${pad}" y1="${pad}" x2="${pad}" y2="${H - pad}" stroke="#23272e"/>
+      <polyline points="${line}" fill="none" stroke="#7cf0c4" stroke-width="2"/>
+      <line x1="${sx.toFixed(1)}" y1="${sy.toFixed(1)}" x2="${sx.toFixed(1)}" y2="${H - pad}" stroke="#ff6a4d" stroke-dasharray="3 3" opacity=".6"/>
+      ${dots}
+      <text x="${Math.min(sx, W - pad - 90).toFixed(1)}" y="${(sy - 10).toFixed(1)}" fill="#ff6a4d"
+        font-family="ui-monospace, monospace" font-size="12" font-weight="600">${lbl}</text>
+      <text x="${pad}" y="${(pad - 12).toFixed(1)}" fill="#5c6675" font-family="ui-monospace, monospace" font-size="10">per-day consumption</text>
+    </svg>`);
+  }
+
+  load();
+</script>
+</body>
+</html>

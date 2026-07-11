@@ -3,6 +3,11 @@
 Agora's cloud agent function-calls against these tool docstrings, so each is a
 one-line description mirroring its demo beat. Served over streamable-HTTP on
 `/mcp` (public tunnel required — Agora can't reach localhost). Run: `just hub-mcp`.
+
+This file is ONLY the AI's tools. The human owner-dashboard (served at `/` on the
+same Cloud Run service) lives in `hub.web` and is attached at the bottom via
+`register_web_routes(mcp)` — those are plain HTTP routes the browser hits, never
+MCP tools, so Agora neither sees nor needs them.
 """
 
 import os
@@ -10,9 +15,12 @@ import os
 from mcp.server.fastmcp import FastMCP
 
 from hub.core import service
+from hub.web import register_web_routes
 
 # Cloud Run injects PORT (default 8080); locally we fall back to 8000.
-mcp = FastMCP("meter-mind-hub", host="0.0.0.0", port=int(os.environ.get("PORT", "8000")))
+mcp = FastMCP(
+    "meter-mind-hub", host="0.0.0.0", port=int(os.environ.get("PORT", "8000"))
+)
 
 
 @mcp.tool()
@@ -43,6 +51,11 @@ def compute_invoice(tenant_id: str, period: str = "2026-07") -> dict:
 def request_recapture(device_id: str) -> dict:
     """Queue a fresh image capture for a meter device."""
     return service.request_recapture(device_id).model_dump()
+
+
+# Attach the human owner-dashboard (page + /api/*) to this server's HTTP app.
+# Plain HTTP routes, not MCP tools — /mcp (streamable-http) is untouched.
+register_web_routes(mcp)
 
 
 if __name__ == "__main__":
