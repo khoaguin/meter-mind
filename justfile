@@ -65,6 +65,43 @@ dashboard:
     @echo "Dashboard → http://localhost:8000/   (MCP for Agora → /mcp)"
     PYTHONPATH=src uv run python -m hub.mcp_server
 
+# --- VN utility agent (Vertex AI Agent Engine) --------------------------------
+
+_gcp_project := 'ai-playground-458112'
+_agent_region := 'asia-southeast1'
+# Deployed engine backing the ask_utility_info MCP tool (see README).
+_agent_resource := env_var_or_default('UTILITY_AGENT_RESOURCE_NAME', 'projects/161661253262/locations/asia-southeast1/reasoningEngines/507930391567400960')
+
+# Chat with the VN utility agent locally (Vertex backend, ADC auth)
+agent-run:
+    GOOGLE_GENAI_USE_VERTEXAI=TRUE GOOGLE_CLOUD_PROJECT={{_gcp_project}} GOOGLE_CLOUD_LOCATION=global \
+        uv run --group agent adk run vn_utility_agent
+
+# Update the deployed VN utility agent in place (create a new engine: `just agent-deploy-new`)
+agent-deploy:
+    uv run --group agent adk deploy agent_engine \
+        --project {{_gcp_project}} --region {{_agent_region}} \
+        --display_name vn-utility-info \
+        --description "General VN electricity/water utility info, grounded via Google Search" \
+        --agent_engine_id "$(basename {{_agent_resource}})" vn_utility_agent
+
+# First-time deploy — creates a NEW engine and prints its resource name
+agent-deploy-new:
+    uv run --group agent adk deploy agent_engine \
+        --project {{_gcp_project}} --region {{_agent_region}} \
+        --display_name vn-utility-info \
+        --description "General VN electricity/water utility info, grounded via Google Search" \
+        vn_utility_agent
+
+# Live golden-question suite against the deployed agent (network + ADC)
+agent-test:
+    UTILITY_AGENT_RESOURCE_NAME={{_agent_resource}} uv run pytest -m manual tests/test_utility_agent_golden.py -v
+
+# Apply/refresh env vars (agent resource + canned answers) on the Cloud Run service
+mcp-env:
+    gcloud run services update meter-mind-mcp --region {{_agent_region}} \
+        --env-vars-file deploy/cloudrun-env.yaml
+
 # Start local MQTT broker (mosquitto)
 broker-up:
     docker compose up -d mosquitto

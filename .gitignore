@@ -26,3 +26,6 @@ data/hub.db
 
 # Worktrees
 .trees/
+
+# ADK deploy scratch (adk deploy agent_engine --temp_folder default)
+vn_utility_agent_tmp*/
