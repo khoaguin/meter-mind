@@ -58,6 +58,13 @@ def _today() -> str:
     return time.strftime("%Y-%m-%d", time.gmtime())
 
 
+def _fold_diacritics(text: str) -> str:
+    decomposed = unicodedata.normalize("NFKD", text)
+    stripped = "".join(c for c in decomposed if not unicodedata.combining(c))
+    # Vietnamese đ/Đ doesn't decompose to "d" + combining mark.
+    return stripped.replace("đ", "d").replace("Đ", "D")
+
+
 def _normalize(question: str) -> str:
     """Cache/canned-answer key: diacritics stripped, casefolded, alphanumeric.
 
@@ -65,16 +72,16 @@ def _normalize(question: str) -> str:
     Vietnamese input ("gia dien hien tai la bao nhieu") and still match the
     fully accented question the voice bot sends.
     """
-    decomposed = unicodedata.normalize("NFKD", question)
-    stripped = "".join(c for c in decomposed if not unicodedata.combining(c))
-    # Vietnamese đ/Đ doesn't decompose to "d" + combining mark.
-    stripped = stripped.replace("đ", "d").replace("Đ", "D")
-    return re.sub(r"[^a-z0-9]+", " ", stripped.casefold()).strip()
+    return re.sub(r"[^a-z0-9]+", " ", _fold_diacritics(question).casefold()).strip()
 
 
 def _truncate_speakable(text: str, limit: int = MAX_ANSWER_CHARS) -> str:
-    """Cut at a sentence boundary so the TTS never trails off mid-thought."""
-    text = text.strip()
+    """Cut at a sentence boundary so the TTS never trails off mid-thought.
+
+    Also folds diacritics the agent may leak in proper nouns ("Bảy Hiền" →
+    "Bay Hien") — the downstream TTS is English-only and chokes on accents.
+    """
+    text = _fold_diacritics(text).strip()
     if len(text) <= limit:
         return text
     sentences = re.split(r"(?<=[.!?])\s+", text)

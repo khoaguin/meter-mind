@@ -50,6 +50,11 @@ def test_truncate_keeps_short_answers_intact():
     assert utility_info._truncate_speakable("Short answer.") == "Short answer."
 
 
+def test_truncate_folds_leaked_vietnamese_diacritics():
+    out = utility_info._truncate_speakable("Parts of Bảy Hiền and Thủ Đức wards.")
+    assert out == "Parts of Bay Hien and Thu Duc wards."
+
+
 def test_truncate_cuts_at_sentence_boundary():
     long = "First sentence here. " * 30
     out = utility_info._truncate_speakable(long)
