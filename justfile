@@ -97,6 +97,11 @@ agent-deploy-new:
 agent-test:
     UTILITY_AGENT_RESOURCE_NAME={{_agent_resource}} uv run pytest -m manual tests/test_utility_agent_golden.py -v
 
+# Apply/refresh env vars (agent resource + canned answers) on the Cloud Run service
+mcp-env:
+    gcloud run services update meter-mind-mcp --region {{_agent_region}} \
+        --env-vars-file deploy/cloudrun-env.yaml
+
 # Start local MQTT broker (mosquitto)
 broker-up:
     docker compose up -d mosquitto

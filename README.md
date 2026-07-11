@@ -136,7 +136,10 @@ meter-mind/
 │   │   └── seed.yaml        # demo dataset (leak on kiosk 3, unpaid tenants)
 │   ├── db/                 # SQLModel tables + idempotent seed loader (SQLite)
 │   ├── api.py              # FastAPI REST — reads for the dashboard + a recapture POST
-│   └── mcp_server.py       # FastMCP streamable-http /mcp — the 5 tools Agora calls
+│   ├── mcp_server.py       # FastMCP streamable-http /mcp — the tools Agora calls
+│   └── utility_info.py     # ask_utility_info backend → Vertex AI Agent Engine (12s cap, cache, fallbacks)
+├── vn_utility_agent/         # Google ADK agent — general VN utility Q&A (Google Search grounding)
+├── deploy/cloudrun-env.yaml  # Cloud Run env vars (agent resource name + canned demo answers)
 ├── scripts/fetch_assets.py   # download jomjol model + digit crops into data/
 ├── tests/                    # pytest — one file per module + a contract test
 ├── data/                     # (fetched) dig-class11 model + labeled digit crops
