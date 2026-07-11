@@ -12,8 +12,11 @@ ENV UV_COMPILE_BYTECODE=1
 COPY pyproject.toml uv.lock README.md ./
 COPY src src
 
+# --no-default-groups: skip dev tooling AND the `agent` group (google-adk /
+# aiplatform SDK are only needed to develop/deploy the Agent Engine agent —
+# the hub calls it over plain REST via httpx + google-auth).
 RUN --mount=type=cache,target=/root/.cache/uv \
-    uv sync --frozen --no-dev
+    uv sync --frozen --no-default-groups
 
 ENV PATH="/app/.venv/bin:$PATH"
 # `hub` is not an installed package — it's imported via PYTHONPATH=src (as in the justfile).

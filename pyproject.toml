@@ -42,6 +42,12 @@ markers = [
 # both are opt-in: `pytest -m integration` / `pytest -m manual`.
 addopts = "-m 'not integration and not manual'"
 
+# `agent` is a default group so plain `uv sync` (local dev, CI) can type-check
+# vn_utility_agent/. The Docker image opts out via `--no-default-groups` —
+# google-adk and the aiplatform SDK are deploy-time tools, not hub runtime deps.
+[tool.uv]
+default-groups = ["dev", "agent"]
+
 [dependency-groups]
 agent = [
     "google-adk>=2.4.0",
