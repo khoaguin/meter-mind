@@ -48,7 +48,7 @@ def test_seed_is_idempotent(seeded_session: Session) -> None:
     load_seed(seeded_session)  # second run over the same DB
     after = {model.__name__: _count(seeded_session, model) for model in TABLES}
     assert before == after
-    assert before["Reading"] == 3 * 31  # 3 devices × 31 days in 2026-07
+    assert before["Reading"] == 7 * 31  # 7 devices × 31 days in 2026-07
 
 
 def test_kiosk3_series_sums_to_usage(seeded_session: Session) -> None:
@@ -66,17 +66,30 @@ def test_spike_day_is_4x(seeded_session: Session) -> None:
     assert round(spike_value / statistics.median(baseline)) == 4
 
 
-def test_water_series_is_flat(seeded_session: Session) -> None:
-    # WHY: non-anomaly meters have no spike — every daily delta equal, sum == usage.
+def test_water_series_organic_no_false_spike(seeded_session: Session) -> None:
+    # WHY: non-anomaly meters vary day-to-day (a realistic chart, not a dead-flat line)
+    # but must NOT trip the detector — sum == usage, all deltas positive, and the biggest
+    # day stays well under the 3× spike threshold so explain_anomaly reports no anomaly.
     deltas = [value for _, value in _daily_deltas(seeded_session, "kiosk1-water")]
     assert sum(deltas) == pytest.approx(12, abs=1e-6)
-    assert max(deltas) == pytest.approx(min(deltas), abs=1e-6)
+    assert min(deltas) > 0  # consumption never goes negative
+    assert max(deltas) != min(deltas)  # organic wiggle, not flat
+    baseline = sorted(deltas)[:-1]  # drop the max, like the detector's baseline
+    assert max(deltas) / statistics.median(baseline) < 3.0  # no false spike
 
 
 def test_unpaid_invoices(seeded_session: Session) -> None:
-    # WHY: beats #3/#4 — room1 paid, room2 + room3 unpaid.
+    # WHY: beats #3/#4 — paid = room1/room4/room5; unpaid = room2/room3/room6/room7.
     paid = {inv.tenant_id: inv.paid for inv in seeded_session.exec(select(Invoice))}
-    assert paid == {"room1": True, "room2": False, "room3": False}
+    assert paid == {
+        "room1": True,
+        "room2": False,
+        "room3": False,
+        "room4": True,
+        "room5": True,
+        "room6": False,
+        "room7": False,
+    }
 
 
 def test_tariffs_present(seeded_session: Session) -> None:

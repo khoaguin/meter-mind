@@ -24,13 +24,17 @@ def test_health_ok() -> None:
     assert resp.json() == {"status": "ok"}
 
 
-def test_devices_lists_all_three() -> None:
+def test_devices_lists_the_fleet() -> None:
     resp = client.get("/devices")
     assert resp.status_code == 200
     assert {d["device_id"] for d in resp.json()} == {
         "kiosk1-water",
         "kiosk2-water",
         "kiosk3-elec",
+        "kiosk4-elec",
+        "kiosk5-water",
+        "kiosk6-elec",
+        "kiosk7-water",
     }
 
 
@@ -48,10 +52,10 @@ def test_anomaly_route_returns_factor() -> None:
     assert resp.json()["factor"] == 4.0
 
 
-def test_unpaid_route_counts_two() -> None:
+def test_unpaid_route_counts_four() -> None:
     resp = client.get("/unpaid")
     assert resp.status_code == 200
-    assert resp.json()["count"] == 2
+    assert resp.json()["count"] == 4
 
 
 def test_invoice_route_amount() -> None:

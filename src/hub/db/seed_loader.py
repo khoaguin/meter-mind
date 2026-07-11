@@ -1,12 +1,14 @@
 """Idempotent seed loader: seed.yaml -> real SQLite rows.
 
 Parses `seed.yaml` at the Phase-0 boundary (`SeedData`, fail-fast), upserts the
-dimension rows, and synthesizes the daily `Reading` series (flat baseline + a
-`factor`× spike on the anomaly day) so `sum(daily deltas) == account.usage`.
-Re-running converges (merge dimensions by PK; delete-then-insert the seeded
-period's readings). Run: `just hub-seed` / `python -m hub.db.seed_loader`.
+dimension rows, and synthesizes the daily `Reading` series (an organic day-to-day
+baseline + a `factor`× surge on the anomaly day) so `sum(daily deltas) ==
+account.usage`. Re-running converges (merge dimensions by PK; delete-then-insert
+the seeded period's readings). Run: `just hub-seed` / `python -m hub.db.seed_loader`.
 """
 
+import math
+import statistics
 from datetime import datetime
 from pathlib import Path
 
@@ -30,23 +32,38 @@ SYNTH_RECEIVED_AT: datetime = datetime(
 )  # deterministic synthetic hub receipt time
 
 
+def _day_weight(day: int) -> float:
+    """Deterministic, always-positive daily weight around 1.0 — an organic wiggle
+    (two out-of-phase sines, no RNG so the build stays reproducible)."""
+    return 1.0 + 0.35 * math.sin(day * 0.9) + 0.18 * math.sin(day * 2.3 + 1.0)
+
+
 def _synth_series(
     account: SeedAccount, anomaly: SeedAnomaly, period: str
 ) -> list[Reading]:
-    """Cumulative daily meter face from START_VALUE; inject a `factor`× day on
-    anomaly.detected_at for the anomaly device so sum(daily deltas) == account.usage."""
+    """Cumulative daily meter face from START_VALUE with an organic baseline; inject
+    a `factor`× surge on anomaly.detected_at for the anomaly device. Deltas are
+    scaled so sum(daily deltas) == account.usage exactly, and the surge is sized off
+    the baseline *median* so the spike detector reads back `factor` unchanged."""
     n = days_in_period(period)
     is_anomaly = anomaly.device_id == account.device_id
     factor = anomaly.factor if is_anomaly else None
     spike_day = int(anomaly.detected_at.split("-")[2]) if is_anomaly else None
-    denom = (n - 1 + factor) if factor else float(n)
-    assert denom != 0, f"degenerate period {period!r}: N-1+factor == 0"
-    baseline = account.usage / denom
+
+    weights = [_day_weight(day) for day in range(1, n + 1)]
+    if factor and spike_day is not None:
+        normal = [w for day, w in enumerate(weights, start=1) if day != spike_day]
+        weights[spike_day - 1] = factor * statistics.median(
+            normal
+        )  # surge == factor× a typical day
+
+    scale = account.usage / sum(
+        weights
+    )  # keep sum(deltas) == usage (invoice math depends on it)
     rows: list[Reading] = []
     face = START_VALUE
     for day in range(1, n + 1):
-        delta = baseline * factor if (factor and day == spike_day) else baseline
-        face += delta
+        face += scale * weights[day - 1]
         rows.append(
             Reading(
                 device_id=account.device_id,
