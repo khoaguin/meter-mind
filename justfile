@@ -83,6 +83,7 @@ agent-deploy:
         --project {{_gcp_project}} --region {{_agent_region}} \
         --display_name vn-utility-info \
         --description "General VN electricity/water utility info, grounded via Google Search" \
+        --otel_to_cloud \
         --agent_engine_id "$(basename {{_agent_resource}})" vn_utility_agent
 
 # First-time deploy — creates a NEW engine and prints its resource name
@@ -91,6 +92,7 @@ agent-deploy-new:
         --project {{_gcp_project}} --region {{_agent_region}} \
         --display_name vn-utility-info \
         --description "General VN electricity/water utility info, grounded via Google Search" \
+        --otel_to_cloud \
         vn_utility_agent
 
 # Live golden-question suite against the deployed agent (network + ADC)
