@@ -1,16 +1,9 @@
 # 🔌 MeterMind
 
-**Turn a fleet of $10 camera-on-a-chip meter readers into an agentic operations copilot.**
+**Voice AI Monitoring Assistant for a Fleet of Meter-Reading Chips.**
 
 A landlord with meters scattered across many units spends hours every month walking around, photographing dials, typing numbers into a spreadsheet, computing bills, and chasing late payers. MeterMind is the software that does all of that automatically — starting from the cheapest possible sensor and ending at a voice box the owner can *ask* (in Vietnamese or English) *"who hasn't paid?"*.
 
-|  |  |
-|---|---|
-| **Event** | Agentic AI Build Week (AABW) — HCMC, July 2026 · Track: Robotics & Physical AI |
-| **Foundation** | [jomjol AI-on-the-edge-device](https://github.com/jomjol/AI-on-the-edge-device) — a ~$10 ESP32-CAM that reads a meter on-chip |
-| **Built** | `edgesim` (virtual jomjol fleet) **+ the hub** — deterministic Core, SQLite, REST API, an **MCP server on Cloud Run** for Agora's voice box, and a live **owner dashboard** on the same service |
-| **Demo** | **Live** → [meter-mind-mcp…run.app](https://meter-mind-mcp-fkoupnt5ua-as.a.run.app/) (dashboard at `/`, Agora bot at `…/mcp`) · [`assets/demoVideo.mp4`](assets/demoVideo.mp4) — walkthrough |
-| **Stack** | Python 3.12 · `uv` · `ai-edge-litert` (TFLite) · `paho-mqtt` · `pydantic` v2 · `pillow` · `pyyaml` · `fastapi` · `sqlmodel` · `mcp` (FastMCP) |
 
 ---
 
@@ -20,19 +13,6 @@ The base sensor **senses** — it reads one meter and shouts a number over WiFi.
 
 ![MeterMind system architecture — physical meters up through edge readers, broker, hub, core, agent, to the owner UI](assets/diagrams/vision.png)
 
-> **Status — what's actually built.** **`edgesim`** (the green producer box) is a Python fleet that emits byte-exact jomjol readings, so the rest of the stack builds against a realistic data stream today with **zero hardware** (the mosquitto broker is provided via Docker). **The hub is built too:** a deterministic **Core** (tariff math, invoicing, anomaly detection — *code, no model*), a **SQLite** store, a **REST API**, and an **MCP server deployed to Cloud Run** exposing the five demo tools. The **Agora voice copilot** is built too: the My Bot ConvoAI cloud agent answers over those MCP tools — *no Claude anywhere in the hub*. Still to come (the dashed boxes): the **owner dashboard**, and a real ESP32-CAM that drops in later as one more producer on the same contract.
-
----
-
-## Why simulate first?
-
-Hardware isn't on the critical path for a 5-day build. So instead of waiting on chips, `edgesim` stands in for the ESP32-CAM fleet — but it does the honest thing at every step:
-
-- **Real model.** It runs jomjol's *actual* `dig-class11` TensorFlow-Lite CNN — the same network that runs on the chip — just off-device, in Python.
-- **Real pixels.** It builds each meter image by compositing **real labeled digit crops** from jomjol's training set, so the CNN sees in-distribution photos, not synthetic fonts.
-- **Real contract.** It publishes the **exact** jomjol MQTT topics and `/json` body. A downstream consumer cannot tell a simulated device from a real chip.
-
-That last point is the whole design: **the contract is the seam.** Build the entire platform against the simulator now; swap in real hardware later with no downstream changes.
 
 ---
 
