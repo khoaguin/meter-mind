@@ -78,14 +78,77 @@ Change a number in `seed.yaml`, re-seed, and every answer moves with it. That's 
 
 ---
 
-## Ownership & build plan (2 engineers, 3 days)
+## The edge producer in detail — edgesim & the wire contract
 
-Focus: **A (spine) + Voice/Agora** — Agora is the sponsor, chips in hand. The seam splits the work cleanly; after the Day-1 freeze there is **zero shared state**.
+> Moved out of the README to keep it focused: how the simulated fleet turns usage into a byte-exact jomjol reading, the physical-device ↔ code map, the MQTT contract, and the demo scenarios.
 
-| | **Track A — Software spine** | **Track B — Physical / voice edge**|
+### How one reading is produced
+
+Every interval, each virtual device runs the same chain a flashed ESP32-CAM runs on-chip. `VirtualDevice.step()` in `device.py` orchestrates it:
+
+![The edgesim tick pipeline — usage tick, advance value, paint meter face from real crops, run the TFLite CNN, assemble the number, wrap in the jomjol payload, publish to MQTT](../assets/diagrams/pipeline.png)
+
+1. **Usage tick** — the device's `Scenario` picks this interval's change (`scenarios.py`).
+2. **Advance the meter** — the running value moves by that delta and becomes a zero-padded digit string.
+3. **Paint the meter face** — real digit crops are composited into a strip image; if the reading is mid-roll, a `NaN` crop is injected (`imagery.py`).
+4. **Read the digits** — jomjol's real CNN classifies each digit and returns a softmax confidence (`reader.py`).
+5. **Assemble the number** — digits become one validated reading; an uncertain digit flags an error and holds the last good value (`assemble.py`).
+6. **Wrap in the jomjol payload** — the reading is packaged as the exact wire format (`contract.py`).
+7. **Publish to MQTT** — flat per-field topics, the `/json` body, plus our additive topics, go to the broker (`publisher.py`).
+
+### Connecting the concepts: physical device ⟷ code
+
+If you know how the ESP32-CAM works but not the code (or vice-versa), this is the map. Each thing a real chip does on a meter corresponds to a specific edgesim class.
+
+![Rosetta stone mapping each physical action of an ESP32-CAM to the edgesim class and file that simulates it](../assets/diagrams/mapping.png)
+
+| A real ESP32-CAM… | …is simulated by | in |
 |---|---|---|
-| Owns | DB + seed · Core · REST · Dashboard · **MCP server** | Agora ESP32-S3 flash · My Bot persona · VN-voice check · point My Bot at the MCP endpoint · tune conversation |
-| Deliverable to the other | a running **MCP endpoint + tool docs** | — (consumes the endpoint) |
-| Stretch | live MQTT ingest (edgesim→DB) | real jomjol meter chip |
+| The number on the meter face (current + last accepted) | `DeviceState.value` / `.pre_value` | `device.py` |
+| One meter-reader device (id, type, digits, decimals) | `VirtualDevice` + `DeviceConfig` | `device.py` |
+| How usage moves the number (steady / leak / dead / flaky) | `make_scenario(kind, seed)` → `Tick{delta, rolling}` | `scenarios.py` |
+| Camera photographs the digit roller / LCD | `CropBank` · `render_strip` · `split_strip` | `imagery.py` |
+| On-chip neural net recognizes each digit | `DigitReader.predict_crop` → `DigitPrediction` | `reader.py` |
+| Firmware assembles digits into one reading | `assemble()` → `MeterReadResult` | `assemble.py` |
+| The MQTT payload it publishes | `Reading` + `Topics` ◀ **the seam** | `contract.py` |
+| WiFi radio pushes to the broker | `Publisher.publish_reading` | `publisher.py` |
+| Many chips on a timer reporting to a hub | `run_fleet` + `FleetConfig` | `fleet.py` |
 
-Track B do not need to touch Python Core — just points Agora at the endpoint URL. Minimal integration surface.
+### The jomjol MQTT contract (the producer seam)
+
+Both the simulator and a real chip publish under a per-device **`MainTopic`** (e.g. `kiosk1-water`), with a message **`group`** that defaults to `main`. The consumer treats both producers identically.
+
+![The MQTT contract — two producers publishing byte-identical topics under one MainTopic, fanning out to flat fields, the /json payload, additive topics, and device status](../assets/diagrams/contract.png)
+
+**Topics published for one device** (`MainTopic` = `kiosk1-water`):
+
+| Topic | Kind | Notes |
+|---|---|---|
+| `kiosk1-water/main/value` `…/raw` `…/error` `…/rate` `…/timestamp` | Native jomjol — flat (5) | one topic per field. **There is no flat `/pre`** — `pre` lives only in `/json`. |
+| `kiosk1-water/main/json` | Native jomjol — the source of truth | the full 6-field payload (below). |
+| `kiosk1-water/main/confidence` | **Additive (ours)** | CNN softmax confidence, 4-decimal string. A real chip omits this. |
+| `kiosk1-water/MeterType` | **Additive (ours)** | `water` / `electricity`. A real chip omits this. |
+| `kiosk1-water/Hostname` `/IP` `/MAC` `/Uptime` `/wifiRSSI` | Native jomjol — status | device health. |
+
+**The `/json` body** — byte-exact jomjol, fixed key order, every value a string:
+
+```json
+{"value":"11.234","raw":"11.234","pre":"10.000","error":"no error","rate":"1.234000","timestamp":"2026-06-27T10:00:00"}
+```
+
+- `value` — the validated reading (the number to trust). `raw` — the uncorrected OCR result. `pre` — the previous accepted value (basis for `rate`).
+- `error` is the literal string `"no error"` when clean, otherwise the rejection reason. Treat it as **free text**; only `"no error"` means clean.
+- `rate` is emitted as a **string** here (jomjol's firmware does the same), though jomjol's docs show it as a number — a consumer must tolerate both.
+
+The tolerance rules that let a real chip and the simulator share one broker (local planning notes): additive topics are optional, unknown topics are ignored, `error` is free text, and values are compared with tolerance — not byte-for-byte.
+
+### The demo scenarios
+
+Each device is driven by a scripted usage profile (`scenarios.py`) so a demo shows the interesting cases, not just steady counting:
+
+| Scenario | Behaviour | Demonstrates |
+|---|---|---|
+| `normal` | small random increments; ~10% mid-roll frames | a healthy meter |
+| `leak` | normal for a few ticks, then a large sustained spike | anomaly / leak detection |
+| `flatline` | value never changes | a broken or stuck meter |
+| `lowconf` | ~70% mid-roll frames → frequent `NaN` reads | the **low-confidence escalation loop** the agent will handle |
